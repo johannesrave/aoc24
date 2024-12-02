@@ -36,9 +36,9 @@ data class Day02A(
     reportLoop@ for (report in reports) {
       val isRising = report[0] < report[1]
       val safeChanges = if (isRising) {
-        setOf(-1, -2, -3)
+        -1 downTo -3
       } else {
-        setOf(1, 2, 3)
+        1..3
       }
 
       for (i in report.indices) {
@@ -70,9 +70,9 @@ data class Day02B(
     reportLoop@ for (report in reports) {
       val isRising = report[0] < report[1]
       val safeChanges = if (isRising) {
-        setOf(-1, -2, -3)
+        -1 downTo -3
       } else {
-        setOf(1, 2, 3)
+        1..3
       }
 
       var jokerUsed = false
