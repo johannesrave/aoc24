@@ -47,15 +47,17 @@ data class Day03B(
 ) {
 
   fun solve(input: String = this.input): Int {
-    val memory = input
-      .replace("\n", "")
-      .split(Regex("""don't\(\).*?(do\(\)|$)"""))
-      .joinToString("")
-
+    val inactiveSegmentRegex = Regex("""don't\(\).*?(do\(\)|$)""")
     val multiplicationRegex = Regex("""mul\((\d{1,3}),(\d{1,3})\)""")
 
-    return multiplicationRegex
-      .findAll(memory).map { multiplication ->
+    val memory = input
+      .replace("\n", "")
+      .split(inactiveSegmentRegex)
+      .joinToString("")
+
+
+    return multiplicationRegex.findAll(memory)
+      .map { multiplication ->
         val (first, second) = multiplication.destructured
         first.toInt() * second.toInt()
       }.sum()
