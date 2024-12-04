@@ -61,20 +61,19 @@ data class Day04B(
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
 
-    val diagonalBoard = board.rotate45Degrees()
+    val crissDiagonalBoard = board.rotate45Degrees()
+    val crossDiagonalBoard = crissDiagonalBoard.transpose()
 
-    println(board.joinEach().joinToString("\n"))
-    println(diagonalBoard.joinEach().joinToString("\n"))
+    println(crissDiagonalBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+    println()
+    println(crossDiagonalBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
 
     val xmasPattern = Regex("(?=XMAS)|(?=SAMX)")
-    val boardAtAngles = listOf(
-      board.joinEach(),
-      board.transpose().joinEach(),
-      diagonalBoard.joinEach(),
-      diagonalBoard.transpose().joinEach()
-    )
-    return boardAtAngles.sumOf { boardAtAngle ->
-      boardAtAngle.sumOf { rowString -> xmasPattern.findAll(rowString).count() }
-    }
+
+    return 0
+
+//    return boardAtAngles.sumOf { boardAtAngle ->
+//      boardAtAngle.sumOf { rowString -> xmasPattern.findAll(rowString).count() }
+//    }
   }
 }

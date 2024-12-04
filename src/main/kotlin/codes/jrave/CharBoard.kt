@@ -1,5 +1,7 @@
 package codes.jrave
 
+val nullChar: Char = '\u0000'
+
 fun parseBoard(input: String): Array<CharArray> =
   input.split("\n").map { line -> line.toCharArray() }.toTypedArray()
 
@@ -31,5 +33,30 @@ fun Array<CharArray>.rotate45Degrees(): Array<CharArray> {
   return diagonalBoard
 }
 
-fun Array<CharArray>.joinEach(filterChars: Set<Char> = setOf('\u0000')): List<String> =
+fun Array<CharArray>.joinEach(filterChars: Set<Char> = setOf(nullChar)): List<String> =
   this.map { row -> row.filter { it !in filterChars }.joinToString("") }
+
+fun Array<CharArray>.shrinkWrap(): Array<CharArray> {
+  val shrinkingArray = this
+
+  return shrinkingArray
+    .dropWhile { row -> row.all { it == nullChar } }
+    .dropLastWhile { row -> row.all { it == nullChar } }
+    .toTypedArray().transpose()
+    .dropWhile { row -> row.all { it == nullChar } }
+    .dropLastWhile { row -> row.all { it == nullChar } }
+    .toTypedArray()
+}
+
+fun main() {
+  val testBoard = emptyBoard(3)
+  testBoard[1][1] = 'A'
+
+  println(testBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+
+  println("shrinkwrapped:")
+  println(testBoard.shrinkWrap().joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+
+  println("original board unchanged:")
+  println(testBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+}
