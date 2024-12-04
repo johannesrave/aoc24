@@ -66,23 +66,28 @@ data class Day04A(
   }
 }
 
+
 data class Day04B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
+  // the idea is to rotate the board by 45 degrees (filling the resulting spaces with a controlled character),
+  // then match all the As in all "criss" strokes of MAS (and SAM). afterwards, i transpose the board
+  // and match the As in the "cross" strokes.
+  // after transposing the cross stroke coordinates, the matches that appear in both sets
+  // are the coordinates of the As that have both a criss and a cross stroke.
+  // their number is the solution.
+  // this currently only works for square boards (and propbably forever)
 
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
 
-    val emptyChar = '_'
-
-    val crissBoard = board.rotate45Degrees(emptyChar).shrinkWrap(emptyChar)
+    // this char is inserted into the board when it is rotated
+    // and must be considered when matching later on
+    val fillerChar = '_'
+    val crissBoard = board.rotate45Degrees(fillerChar).shrinkWrap(fillerChar)
     val crossBoard = crissBoard.transpose()
 
-    println(crissBoard.joinToString("\n") { it.joinToString("") })
-    println()
-    println(crossBoard.joinToString("\n") { it.joinToString("") })
-
-    val xmasPattern = Regex("(?=M${emptyChar}(A)${emptyChar}S)|(?=S${emptyChar}(A)${emptyChar}M)")
+    val xmasPattern = Regex("(?=M${fillerChar}(A)${fillerChar}S)|(?=S${fillerChar}(A)${fillerChar}M)")
 
     val crissMatches = crissBoard.getMatchCoordinates(xmasPattern).toSet()
     // need to flip the crossMatches due to transposition
