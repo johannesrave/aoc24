@@ -1,6 +1,6 @@
 package codes.jrave
 
-val nullChar: Char = '\u0000'
+val NULL_CHAR: Char = '\u0000'
 
 fun parseBoard(input: String): Array<CharArray> =
   input.split("\n").map { line -> line.toCharArray() }.toTypedArray()
@@ -17,11 +17,11 @@ fun Array<CharArray>.transpose(): Array<CharArray> =
 fun Array<CharArray>.mirrorX(): Array<CharArray> =
   this.map { row -> row.reversedArray() }.toTypedArray()
 
-fun Array<CharArray>.rotate45Degrees(): Array<CharArray> {
+fun Array<CharArray>.rotate45Degrees(nullChar: Char? = null): Array<CharArray> {
   val xDim = first().lastIndex
   val yDim = lastIndex
   val dimensionOfDiagonalBoard = xDim + yDim + 2
-  val diagonalBoard = emptyBoard(dimensionOfDiagonalBoard)
+  val diagonalBoard = emptyBoard(dimensionOfDiagonalBoard, nullChar)
 
   for (y in 0..yDim) {
     for (x in 0..xDim) {
@@ -33,10 +33,10 @@ fun Array<CharArray>.rotate45Degrees(): Array<CharArray> {
   return diagonalBoard
 }
 
-fun Array<CharArray>.joinEach(filterChars: Set<Char> = setOf(nullChar)): List<String> =
+fun Array<CharArray>.joinEach(filterChars: Set<Char> = setOf(NULL_CHAR)): List<String> =
   this.map { row -> row.filter { it !in filterChars }.joinToString("") }
 
-fun Array<CharArray>.shrinkWrap(): Array<CharArray> {
+fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> {
   val shrinkingArray = this
 
   return shrinkingArray
@@ -52,11 +52,11 @@ fun main() {
   val testBoard = emptyBoard(3)
   testBoard[1][1] = 'A'
 
-  println(testBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+  println(testBoard.joinToString("\n") { it.joinToString("").replace(NULL_CHAR, '_') })
 
   println("shrinkwrapped:")
-  println(testBoard.shrinkWrap().joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+  println(testBoard.shrinkWrap().joinToString("\n") { it.joinToString("").replace(NULL_CHAR, '_') })
 
   println("original board unchanged:")
-  println(testBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+  println(testBoard.joinToString("\n") { it.joinToString("").replace(NULL_CHAR, '_') })
 }

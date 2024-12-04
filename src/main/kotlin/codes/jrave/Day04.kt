@@ -17,17 +17,29 @@ fun main() {
   println("Solution took $durationA milliseconds")
 
   val day04BTest = Day04B("input/test_04")
+  assert(
+    day04BTest.solve(
+      """
+    XMXM
+    XXAX
+    XSXS
+    XXXX
+  """.trimIndent()
+    ) == 1
+  )
+
   val day04BTestResult = day04BTest.solve().also { println(it) }
   assert(day04BTestResult == 9)
 
   val day04B = Day04B("input/input_04")
   val duration04B = measureTimeMillis {
     val solution = day04B.solve()
-//    assert(solution == 2517)
+    assert(solution == 1960)
     println("Solution for Day04B: $solution")
   }
   println("Solution took $duration04B milliseconds")
 }
+
 
 data class Day04A(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
@@ -61,19 +73,36 @@ data class Day04B(
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
 
-    val crissDiagonalBoard = board.rotate45Degrees()
-    val crossDiagonalBoard = crissDiagonalBoard.transpose()
+    val emptyChar = '_'
 
-    println(crissDiagonalBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+    val crissBoard = board.rotate45Degrees(emptyChar).shrinkWrap(emptyChar)
+    val crossBoard = crissBoard.transpose()
+
+    println(crissBoard.joinToString("\n") { it.joinToString("") })
     println()
-    println(crossDiagonalBoard.joinToString("\n") { it.joinToString("").replace(nullChar, '_') })
+    println(crossBoard.joinToString("\n") { it.joinToString("") })
 
-    val xmasPattern = Regex("(?=XMAS)|(?=SAMX)")
+    val xmasPattern = Regex("(?=M${emptyChar}(A)${emptyChar}S)|(?=S${emptyChar}(A)${emptyChar}M)")
 
-    return 0
+    val crissMatches = crissBoard.getMatchCoordinates(xmasPattern).toSet()
+    // need to flip the crossMatches due to transposition
+    val crossMatches = crossBoard.getMatchCoordinates(xmasPattern).map { (x, y) -> y to x }.toSet()
 
-//    return boardAtAngles.sumOf { boardAtAngle ->
-//      boardAtAngle.sumOf { rowString -> xmasPattern.findAll(rowString).count() }
-//    }
+    val crissCrossMatches = (crissMatches intersect crossMatches)
+    return crissCrossMatches.size
   }
+
+  private fun Array<CharArray>.getMatchCoordinates(pattern: Regex) =
+    map { row -> row.joinToString("") }
+      .flatMapIndexed { y, rowString ->
+        pattern
+          .findAll(rowString)
+          // only keep the results with matches
+          .filter { result -> result.groups.isNotEmpty() }
+          // the results for the capturing group with the (A) contain its range
+          // the range has a length of 1 (for one char) and is one of the coordinates,
+          // the other is the row number
+          .map { (it.groups[1] ?: it.groups[2]!!).range.first }
+          .map { x -> y to x }
+      }
 }
