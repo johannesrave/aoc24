@@ -5,8 +5,8 @@ import kotlin.system.measureTimeMillis
 
 fun main() {
   val day04ATest = Day04A("input/test_04")
-  val testResult = day04ATest.solve().also { println(it) }
-  assert(testResult == 18)
+  val day04ATestResult = day04ATest.solve().also { println(it) }
+  assert(day04ATestResult == 18)
 
   val day04A = Day04A("input/input_04")
   val durationA = measureTimeMillis {
@@ -16,17 +16,17 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-//  val day04BTest = Day04B("input/test_04")
-//  assert(day04BTest.solve("xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))") == 48)
-//
-//  val day04B = Day04B("input/input_04")
-//  val durationB = measureTimeMillis {
-//    val solution = day04B.solve()
-//    assert(solution == 90044227)
-//    println("Solution for Day04B: $solution")
-//  }
-//  println("solution took $durationB milliseconds")
+  val day04BTest = Day04B("input/test_04")
+  val day04BTestResult = day04BTest.solve().also { println(it) }
+  assert(day04BTestResult == 9)
 
+  val day04B = Day04B("input/input_04")
+  val duration04B = measureTimeMillis {
+    val solution = day04B.solve()
+//    assert(solution == 2517)
+    println("Solution for Day04B: $solution")
+  }
+  println("Solution took $duration04B milliseconds")
 }
 
 data class Day04A(
