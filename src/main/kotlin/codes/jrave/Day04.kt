@@ -59,15 +59,22 @@ data class Day04B(
 ) {
 
   fun solve(input: String = this.input): Int {
-    val inactiveSegmentRegex = Regex("""don't\(\).*?(do\(\)|$)""")
-    val multiplicationRegex = Regex("""mul\((\d{1,3}),(\d{1,3})\)""")
+    val board = parseBoard(input)
 
-    val memory = input.replace("\n", "").split(inactiveSegmentRegex).joinToString("")
+    val diagonalBoard = board.rotate45Degrees()
 
+    println(board.joinEach().joinToString("\n"))
+    println(diagonalBoard.joinEach().joinToString("\n"))
 
-    return multiplicationRegex.findAll(memory).map { multiplication ->
-      val (first, second) = multiplication.destructured
-      first.toInt() * second.toInt()
-    }.sum()
+    val xmasPattern = Regex("(?=XMAS)|(?=SAMX)")
+    val boardAtAngles = listOf(
+      board.joinEach(),
+      board.transpose().joinEach(),
+      diagonalBoard.joinEach(),
+      diagonalBoard.transpose().joinEach()
+    )
+    return boardAtAngles.sumOf { boardAtAngle ->
+      boardAtAngle.sumOf { rowString -> xmasPattern.findAll(rowString).count() }
+    }
   }
 }
