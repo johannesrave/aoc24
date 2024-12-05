@@ -11,18 +11,21 @@ fun main() {
   val day05A = Day05A("input/input_05")
   val durationA = measureTimeMillis {
     val solution = day05A.solve()
-//    assert(solution == 2517)
     println("Solution for Day05A: $solution")
+    assert(solution == 5651)
   }
   println("Solution took $durationA milliseconds")
 
-//  val day05B = Day05B("input/input_05")
-//  val duration05B = measureTimeMillis {
-//    val solution = day05B.solve()
-//    assert(solution == 1960)
-//    println("Solution for Day05B: $solution")
-//  }
-//  println("Solution took $duration05B milliseconds")
+  val day05BTest = Day05B("input/test_05")
+  val day05BTestResult = day05BTest.solve()
+  assert(day05BTestResult == 123)
+  val day05B = Day05B("input/input_05")
+  val duration05B = measureTimeMillis {
+    val solution = day05B.solve()
+    println("Solution for Day05B: $solution")
+    assert(solution == 4743)
+  }
+  println("Solution took $duration05B milliseconds")
 }
 
 
@@ -33,71 +36,74 @@ data class Day05A(
   fun solve(input: String = this.input): Int {
     val (rules, pages) = input.split("\n\n").map { it.split("\n") }
 
-    val rulePatterns =
-      rules.map { rule ->
-        val (first, second) = rule.split("|")
-        first to second
-      }
+    val rulePatterns = rules.map { rule ->
+      val (first, second) = rule.split("|")
+      first to second
+    }
 
-    return pages
-      .filter { page ->
-        rulePatterns.all { (first, second) ->
-          if (first in page && second in page) {
-            Regex("$first.*$second").containsMatchIn(page)
-          } else true
-        }
+    return pages.filter { page ->
+      rulePatterns.all { (first, second) ->
+        (first in page && second in page && isSortedCorrectly(page, first, second))
+            || (first !in page || second !in page)
       }
-      .map {
-        val numbers = it.split(",")
+    }.map { it.split(",") }
+      .map { numbers ->
         val middleIndex = numbers.count() / 2
         numbers[middleIndex]
       }.sumOf { it.toInt() }
   }
+
+  private fun isSortedCorrectly(page: String, first: String, second: String) =
+    Regex("$first.*$second").containsMatchIn(page)
 }
 
 
 data class Day05B(
-  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
+  val inputPath: String,
+  val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  // the idea is to rotate the board by 45 degrees (filling the resulting spaces with a controlled character),
-  // then match all the As in all "criss" strokes of MAS (and SAM). afterwards, i transpose the board
-  // and match the As in the "cross" strokes.
-  // after transposing the cross stroke coordinates, the matches that appear in both sets
-  // are the coordinates of the As that have both a criss and a cross stroke.
-  // their number is the solution.
-  // this currently only works for square boards (and propbably forever)
 
   fun solve(input: String = this.input): Int {
-    val board = parseBoard(input)
+    val (rules, pages) = input.split("\n\n").map { it.split("\n") }
 
-    // this char is inserted into the board when it is rotated
-    // and must be considered when matching later on
-    val fillerChar = '_'
-    val crissBoard = board.rotate45Degrees(fillerChar).shrinkWrap(fillerChar)
-    val crossBoard = crissBoard.transpose()
+    val rulePatterns = rules.map { rule ->
+      val (first, second) = rule.split("|")
+      first to second
+    }
 
-    val xmasPattern =
-      Regex("(?=M${fillerChar}(A)${fillerChar}S)|(?=S${fillerChar}(A)${fillerChar}M)")
+    val incorrectPages = pages.filterNot { page ->
+      rulePatterns.all { (first, second) ->
+        (first in page && second in page && isSortedCorrectly(page, first, second))
+            || (first !in page || second !in page)
+      }
+    }
 
-    val crissMatches = crissBoard.getMatchCoordinates(xmasPattern).toSet()
-    // need to flip the crossMatches due to transposition
-    val crossMatches = crossBoard.getMatchCoordinates(xmasPattern).map { (x, y) -> y to x }.toSet()
-
-    val crissCrossMatches = (crissMatches intersect crossMatches)
-    return crissCrossMatches.size
+    return incorrectPages
+      .map { it.split(",") }
+      .map { numbers -> sortByRules(numbers, rulePatterns) }
+      .map { numbers ->
+        val middleIndex = numbers.count() / 2
+        numbers[middleIndex]
+      }.sumOf { it.toInt() }
   }
 
-  private fun Array<CharArray>.getMatchCoordinates(pattern: Regex) =
-    map { row -> row.joinToString("") }
-      .flatMapIndexed { y, rowString ->
-        pattern
-          .findAll(rowString)
-          // only keep the results with matches
-          .filter { result -> result.groups.isNotEmpty() }
-          // the results for the capturing group with the (A) contain its range
-          // the range has a length of 1 (for one char) and is one of the coordinates,
-          // the other is the row number
-          .map { (it.groups[1] ?: it.groups[2]!!).range.first }
-          .map { x -> y to x }
+  fun sortByRules(page: List<String>, rulePatterns: List<Pair<String, String>>): List<String> {
+    val rulePatterns_ = rulePatterns.filter { (a, b) -> a in page && b in page }
+    val page_ = page.toMutableList()
+    do {
+      for (pattern in rulePatterns_) {
+        val (a, b) = pattern
+        val aIndex = page_.indexOf(a)
+        val bIndex = page_.indexOf(b)
+        if (aIndex > bIndex) {
+          page_.removeAt(aIndex)
+          page_.add(bIndex, a)
+        }
       }
+    } while (rulePatterns_.any { (a, b) -> !isSortedCorrectly(page_.joinToString(), a, b) })
+    return page_
+  }
+
+  fun isSortedCorrectly(page: String, first: String, second: String) =
+    Regex("$first.*$second").containsMatchIn(page)
 }
