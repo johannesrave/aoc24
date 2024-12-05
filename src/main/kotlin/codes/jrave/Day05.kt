@@ -90,6 +90,7 @@ data class Day05B(
   fun sortByRules(page: List<String>, rulePatterns: List<Pair<String, String>>): List<String> {
     val rulePatterns_ = rulePatterns.filter { (a, b) -> a in page && b in page }
     val page_ = page.toMutableList()
+    var runs = 0 // just out of interest
     do {
       for (pattern in rulePatterns_) {
         val (a, b) = pattern
@@ -100,7 +101,9 @@ data class Day05B(
           page_.add(bIndex, a)
         }
       }
+      runs++
     } while (rulePatterns_.any { (a, b) -> !isSortedCorrectly(page_.joinToString(), a, b) })
+    println("$runs runs for $page to $page_")
     return page_
   }
 
