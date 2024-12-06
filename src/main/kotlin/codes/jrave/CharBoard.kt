@@ -44,6 +44,14 @@ fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> =
   .dropLastWhile { row -> row.all { it == nullChar } }
   .toTypedArray()
 
+operator fun Array<CharArray>.get(pos: Pos): Char = this[pos.y][pos.x]
+
+infix fun Array<out CharArray>.contains(pos: Pos): Boolean =
+  (pos.y in this.indices && pos.x in this.first().indices)
+
+data class Pos(val y: Int, val x: Int)
+
+
 fun main() {
   val testBoard = emptyBoard(3)
   testBoard[1][1] = 'A'
