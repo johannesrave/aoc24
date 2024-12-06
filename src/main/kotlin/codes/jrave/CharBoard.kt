@@ -36,17 +36,13 @@ fun Array<CharArray>.rotate45Degrees(nullChar: Char? = null): Array<CharArray> {
 fun Array<CharArray>.joinEach(filterChars: Set<Char> = setOf(NULL_CHAR)): List<String> =
   this.map { row -> row.filter { it !in filterChars }.joinToString("") }
 
-fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> {
-  val shrinkingArray = this
-
-  return shrinkingArray
-    .dropWhile { row -> row.all { it == nullChar } }
-    .dropLastWhile { row -> row.all { it == nullChar } }
-    .toTypedArray().transpose()
-    .dropWhile { row -> row.all { it == nullChar } }
-    .dropLastWhile { row -> row.all { it == nullChar } }
-    .toTypedArray()
-}
+fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> = this
+  .dropWhile { row -> row.all { it == nullChar } }
+  .dropLastWhile { row -> row.all { it == nullChar } }
+  .toTypedArray().transpose()
+  .dropWhile { row -> row.all { it == nullChar } }
+  .dropLastWhile { row -> row.all { it == nullChar } }
+  .toTypedArray()
 
 fun main() {
   val testBoard = emptyBoard(3)
