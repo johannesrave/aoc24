@@ -35,31 +35,47 @@ data class Day06A(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val block = '#'
 
-    var guardPosition = board.mapIndexedNotNull { y, row ->
+    val guardPosition = findGuardPosition(board)
+    val guardMarker = board[guardPosition]
+    val guardDirection = GuardDirection.from(guardMarker)
+
+    val positions = walkPath(guardPosition, guardDirection, board)
+
+    return positions.size
+  }
+
+  private fun findGuardPosition(board: Array<CharArray>): Pos {
+    val guardPosition = board.mapIndexedNotNull { y, row ->
       if (guardMarkers.any { it in row }) {
         val x = row.indexOfFirst { it in guardMarkers }
         Pos(y, x)
       } else null
     }.first()
+    return guardPosition
+  }
 
-    var guardDirection = GuardDirection.from(board[guardPosition])
-
-    val positions = mutableSetOf(guardPosition)
+  private fun walkPath(
+    guardPosition: Pos,
+    guardDirection: GuardDirection,
+    board: Array<CharArray>,
+    block: Char = '#'
+  ): MutableSet<Pos> {
+    var guardPosition1 = guardPosition
+    var guardDirection1 = guardDirection
+    val positions = mutableSetOf(guardPosition1)
 
     while (true) {
-      val lookAheadPos = guardPosition + guardDirection
-      guardDirection = when {
+      val lookAheadPos = guardPosition1 + guardDirection1
+      guardDirection1 = when {
         !(board contains lookAheadPos) -> break
-        (board[lookAheadPos] == block) -> guardDirection.turnClockwise()
-        else -> guardDirection
+        (board[lookAheadPos] == block) -> guardDirection1.turnClockwise()
+        else -> guardDirection1
       }
-      guardPosition += guardDirection
-      positions += guardPosition
+      guardPosition1 += guardDirection1
+      positions += guardPosition1
     }
-
-    return positions.size
+    return positions
   }
 
   private operator fun Pos.plus(guardDirection: GuardDirection): Pos =
