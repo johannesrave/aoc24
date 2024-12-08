@@ -27,6 +27,8 @@ fun main() {
     println("Solution for Day06B: $solution")
     assert(solution > 1511)
     assert(solution > 1660)
+    assert(solution > 1661)
+    assert(solution > 1662)
     assert(solution == 1660)
   }
   println("Solution took $duration06B milliseconds")
@@ -88,19 +90,31 @@ data class Day06B(
 
     println(board.markSteps(path).toPrintString())
 
-    return path.dropLast(1).filter { step ->
-      val blockedBoard = board.deepClone().apply { set(step.pos + step.dir, blockChar) }
+    val obstructionPositions = path.dropLast(1).filter { step ->
+      val blockPos = step.pos + step.dir
+//      println("starting at $step, blocking position $blockPos")
+      val blockedBoard = board.deepClone().apply { set(blockPos, blockChar) }
       val (path_, isCyclical) = walkPath(blockedBoard, step.pos, step.dir)
-//      println()
-//      println(board.markSteps(path_).toPrintString())
+//      if (!isCyclical) {
+//        println()
+//        blockedBoard[blockPos] = 'O'
+//        println(blockedBoard.markSteps(path_).toPrintString())
+//      } else {
+//        println("found cycle")
+//      }
       (isCyclical)
-    }.size
+    }
+
+    println()
+    println(board.markSteps(path).markSteps(obstructionPositions, '+').toPrintString())
+
+    return obstructionPositions.size
   }
 
-  fun Array<CharArray>.markSteps(steps: MutableList<Step>): Array<CharArray> {
+  fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): Array<CharArray> {
     val board_ = deepClone()
-    steps.forEach { step -> board_[step.pos] = step.dir.c }
-    board_[steps.first().pos] = 'O'
+    steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
+    board_[steps.first().pos] = 'X'
     return board_
   }
 
@@ -117,15 +131,16 @@ data class Day06B(
 
     while (true) {
       val lookAheadPos = pos_ + dir_
-      dir_ = when {
-        !(board contains lookAheadPos) -> {
-          steps += Step(pos_, dir_)
-          return steps to false
-        }
+      if (!(board contains lookAheadPos)) {
+        steps += Step(pos_, dir_)
+        return steps to false
+      }
 
+      dir_ = when {
         (board[lookAheadPos] == block) -> dir_.turnClockwise()
         else -> dir_
       }
+
       val step = Step(pos_, dir_)
       if (step in steps) {
         steps += step
