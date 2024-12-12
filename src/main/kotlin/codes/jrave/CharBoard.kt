@@ -67,6 +67,7 @@ infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
 
 data class Pos(val y: Int, val x: Int)
 
+operator fun Pos.plus(direction: Direction): Pos = Pos(y + direction.y, x + direction.x)
 
 fun Array<CharArray>.deepClone(): Array<CharArray> = Array(size) { get(it).clone() }
 
