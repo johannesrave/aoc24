@@ -76,15 +76,14 @@ data class Day06B(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val blockChar = '#'
-    val emptyChar = '.'
+    val blockMarker = '#'
 
-    val guardPosition = board.findPosition(directionMarkers)
-    val guardMarker = board[guardPosition]
-    val direction = Direction.from(guardMarker)
+    val initialPosition = board.findPosition(directionMarkers)
+    val directionMarker = board[initialPosition]
+    val initialDirection = Direction.from(directionMarker)
 
-    // the idea is to walk the path first, and these tiles are the candidates for placing obstructions
-    val (path, _) = walkPath(board, guardPosition, direction, blockChar)
+    // the idea is to walk the path first to find all candidate-tiles for placing obstructions
+    val (path, _) = walkPath(board, initialPosition, initialDirection, blockMarker)
 
     val obstructionPositions = path
       // find the obstruction positions by looking ahead one tile from each position
@@ -96,12 +95,12 @@ data class Day06B(
       // deduplicate
       .distinctBy { (_, blockPos) -> blockPos }
       // exclude initial guard position
-      .filter { (_, blockPos) -> (blockPos != guardPosition) }
+      .filter { (_, blockPos) -> (blockPos != initialPosition) }
       // exclude obstruction candidates that lie outside the board
       .filter { (_, blockPos) -> (blockPos in board) }
       // only keep positions that lead into a cyclical path
       .filter { (step, blockPos) ->
-        val blockedBoard = board.deepClone().apply { set(blockPos, blockChar) }
+        val blockedBoard = board.deepClone().apply { set(blockPos, blockMarker) }
         val (_, isCyclical) = walkPath(blockedBoard, step.pos, step.dir)
         (isCyclical)
       }.map { (_, blockPos) -> blockPos }
@@ -134,34 +133,5 @@ data class Day06B(
       }
       steps.addLast(step)
     }
-  }
-
-  fun Array<CharArray>.markPositions(positions: List<Pos>, char: Char = 'O'): Array<CharArray> =
-    deepClone().also { board -> positions.forEach { pos -> board[pos] = char } }
-
-
-  fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): Array<CharArray> {
-    val board_ = deepClone()
-    steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
-    board_[steps.first().pos] = 'X'
-    return board_
-  }
-
-  private operator fun Pos.plus(direction: Direction): Pos =
-    Pos(y + direction.y, x + direction.x)
-}
-
-data class Step(val pos: Pos, val dir: Direction)
-
-enum class Direction(val x: Int, val y: Int, val c: Char) {
-  N(0, -1, '^'), E(1, 0, '>'), S(0, 1, 'v'), W(-1, 0, '<'), ;
-
-  fun turnClockwise() = turnBy(1)
-
-  private fun turnBy(n: Int) = entries[(this.ordinal + n) % entries.size]
-
-  companion object {
-    val directionMarkers = entries.map { it.c }.toSet()
-    fun from(c: Char): Direction = entries.find { it.c == c }!!
   }
 }

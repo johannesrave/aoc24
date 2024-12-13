@@ -65,11 +65,40 @@ operator fun Array<CharArray>.set(pos: Pos, char: Char) {
 infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
   (pos.y in this.indices && pos.x in this.first().indices)
 
-data class Pos(val y: Int, val x: Int)
-
-operator fun Pos.plus(direction: Direction): Pos = Pos(y + direction.y, x + direction.x)
 
 fun Array<CharArray>.deepClone(): Array<CharArray> = Array(size) { get(it).clone() }
+
+
+fun Array<CharArray>.markPositions(positions: List<Pos>, char: Char = 'O'): Array<CharArray> =
+  deepClone().also { board -> positions.forEach { pos -> board[pos] = char } }
+
+
+fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): Array<CharArray> {
+  val board_ = deepClone()
+  steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
+  board_[steps.first().pos] = 'X'
+  return board_
+}
+
+data class Pos(val y: Int, val x: Int) {
+  operator fun plus(direction: Direction): Pos = Pos(y + direction.y, x + direction.x)
+}
+
+enum class Direction(val x: Int, val y: Int, val c: Char) {
+  N(0, -1, '^'), E(1, 0, '>'), S(0, 1, 'v'), W(-1, 0, '<'), ;
+
+  fun turnClockwise() = turnBy(1)
+
+  private fun turnBy(n: Int) = entries[(this.ordinal + n) % entries.size]
+
+  companion object {
+    val directionMarkers = entries.map { it.c }.toSet()
+    fun from(c: Char): Direction = entries.find { it.c == c }!!
+  }
+}
+
+data class Step(val pos: Pos, val dir: Direction)
+
 
 fun main() {
   val testBoard = emptyBoard(3)
