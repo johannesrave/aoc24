@@ -92,6 +92,7 @@ data class Day06B(
         val blockPos = step.pos + step.dir
         step to blockPos
       }
+      .distinctBy { (_, blockPos) -> blockPos }
       .filter { (step, blockPos) ->
         if (blockPos !in board) return@filter false
         if (blockPos == guardPosition) return@filter false
@@ -125,17 +126,6 @@ data class Day06B(
     return obstructionPositions.size
   }
 
-  fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): Array<CharArray> {
-    val board_ = deepClone()
-    steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
-    board_[steps.first().pos] = 'X'
-    return board_
-  }
-
-  fun Array<CharArray>.markPositions(positions: List<Pos>, char: Char = 'O'): Array<CharArray> =
-    deepClone().also { board -> positions.forEach { pos -> board[pos] = char } }
-
-
   private fun walkPath(
     board: Array<CharArray>,
     pos: Pos,
@@ -160,6 +150,17 @@ data class Day06B(
       }
       steps.addLast(step)
     }
+  }
+
+  fun Array<CharArray>.markPositions(positions: List<Pos>, char: Char = 'O'): Array<CharArray> =
+    deepClone().also { board -> positions.forEach { pos -> board[pos] = char } }
+
+
+  fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): Array<CharArray> {
+    val board_ = deepClone()
+    steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
+    board_[steps.first().pos] = 'X'
+    return board_
   }
 
   private operator fun Pos.plus(direction: Direction): Pos =
