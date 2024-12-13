@@ -83,46 +83,30 @@ data class Day06B(
     val guardMarker = board[guardPosition]
     val direction = Direction.from(guardMarker)
 
+    // the idea is to walk the path first, and these tiles are the candidates for placing obstructions
     val (path, _) = walkPath(board, guardPosition, direction, blockChar)
 
-//    println(board.markSteps(path).toPrintString())
-
-    val obstructionsIncludingDuplicates = path
+    val obstructionPositions = path
+      // find the obstruction positions by looking ahead one tile from each position
+      .asSequence()
       .map { step ->
         val blockPos = step.pos + step.dir
         step to blockPos
       }
+      // deduplicate
       .distinctBy { (_, blockPos) -> blockPos }
+      // exclude initial guard position
+      .filter { (_, blockPos) -> (blockPos != guardPosition)}
+      // exclude obstruction candidates that lie outside the board
+      .filter { (_, blockPos) -> (blockPos in board)}
+      // only keep positions that lead into a cyclical path
       .filter { (step, blockPos) ->
-        if (blockPos !in board) return@filter false
-        if (blockPos == guardPosition) return@filter false
-
         val blockedBoard = board.deepClone().apply { set(blockPos, blockChar) }
-        val (path, isCyclical) = walkPath(blockedBoard, step.pos, step.dir)
+        val (_, isCyclical) = walkPath(blockedBoard, step.pos, step.dir)
         (isCyclical)
-      }.map { (_, blockPos) -> blockPos }.also { println(it.size) }
+      }.map { (_, blockPos) -> blockPos }
+      .toList()
 
-    val obstructionPositions = obstructionsIncludingDuplicates.distinct().also { println(it.size) }
-
-    val wrongPositions = obstructionPositions.filter { it !in solution }
-    val missingPositions = solution.filter { it !in obstructionPositions }
-
-    println()
-    val markedBoard = board.markSteps(path).markPositions(obstructionPositions)
-    println("obstructions O")
-    println(markedBoard.toPrintString())
-
-    if (board.size > 50) {
-      println()
-      println("obstructions O, wrong @ and missing T")
-      println(
-        board
-          .markSteps(path)
-          .markPositions(obstructionPositions, char = 'O')
-          .markPositions(wrongPositions, char = '@')
-          .markPositions(missingPositions, char = 'T').toPrintString()
-      )
-    }
     return obstructionPositions.size
   }
 
