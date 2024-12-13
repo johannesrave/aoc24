@@ -6,7 +6,7 @@ import kotlin.system.measureTimeMillis
 
 fun main() {
   val day07ATest = Day07A("input/test_07")
-  val day07ATestResult = day07ATest.solve().also { println(it) }
+  val day07ATestResult = day07ATest.solve()
   assert(day07ATestResult == 3749.toBigInteger())
 
   val day07A = Day07A("input/input_07")
@@ -43,7 +43,7 @@ data class Day07A(
       result to operands
     }
 
-    resultsToOperands.also { println(it) }
+    resultsToOperands
 
     return resultsToOperands
       .filter { (result, operands) -> isPossible(result, operands) }
@@ -51,7 +51,7 @@ data class Day07A(
   }
 
   private fun isPossible(result: BigInteger, operands: List<BigInteger>): Boolean {
-    val operatorCombos = operatorCombos(operands).also { println(it) }
+    val operatorCombos = operatorCombos(operands)
 
     return operatorCombos.any { combo ->
       result == combo.foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
@@ -74,7 +74,7 @@ data class Day07A(
       operatorCombos = expandedCombos
     }
 
-    return operatorCombos.also { println(it) }
+    return operatorCombos
   }
 }
 
