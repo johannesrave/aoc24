@@ -82,6 +82,7 @@ fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): A
 
 data class Pos(val y: Int, val x: Int) {
   operator fun plus(direction: Direction): Pos = Pos(y + direction.y, x + direction.x)
+  operator fun minus(other: Pos): Pos = Pos(y - other.y, x - other.x)
 }
 
 enum class Direction(val x: Int, val y: Int, val c: Char) {
