@@ -45,35 +45,19 @@ data class Day07A(
     }
 
     return resultsToOperands
-      .filter { (result, operands) -> isPossible(result, operands) }
+      .filter { (result, operands) -> validOperationExists(result, operands) }
       .fold(BigInteger.ZERO) { acc, (result, _) -> acc + result }
   }
 
-  private fun isPossible(result: BigInteger, operands: List<BigInteger>): Boolean {
-    val operatorCombos = operatorCombos(operands)
+  fun validOperationExists(result: BigInteger, operands: List<BigInteger>): Boolean {
+    if (operands.size == 1) return result == operands.first()
+    val operationsTable = OperationsTable.ops(operands.size - 1)
 
-    return operatorCombos.any { combo ->
-      result == combo.foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
+    return operationsTable.any { operationsRow ->
+      val operationsRowResult = operationsRow
+        .foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
+      result == operationsRowResult
     }
-  }
-
-  private fun operatorCombos(operands: List<BigInteger>):
-      Set<List<Operation>> {
-
-    val operators = setOf(BigInteger::plus, BigInteger::multiply)
-    var operatorCombos = setOf(listOf<Operation>())
-
-    for (operand in 1..operands.lastIndex) {
-      val expandedCombos = mutableSetOf<List<Operation>>()
-      for (operatorCombo in operatorCombos) {
-        for (operator in operators) {
-          expandedCombos += (operatorCombo + listOf(operator))
-        }
-      }
-      operatorCombos = expandedCombos
-    }
-
-    return operatorCombos
   }
 }
 
