@@ -2,6 +2,7 @@ package codes.jrave
 
 import java.io.File
 import java.math.BigInteger
+import kotlin.math.pow
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -57,13 +58,13 @@ data class Day07A(
   }
 
   private fun operatorCombos(operands: List<BigInteger>):
-      Set<List<(left: BigInteger, right: BigInteger) -> BigInteger>> {
+      Set<List<Operation>> {
 
     val operators = setOf(BigInteger::plus, BigInteger::multiply)
-    var operatorCombos = setOf(listOf<(left: BigInteger, right: BigInteger) -> BigInteger>())
+    var operatorCombos = setOf(listOf<Operation>())
 
     for (operand in 1..operands.lastIndex) {
-      val expandedCombos = mutableSetOf<List<(left: BigInteger, right: BigInteger) -> BigInteger>>()
+      val expandedCombos = mutableSetOf<List<Operation>>()
       for (operatorCombo in operatorCombos) {
         for (operator in operators) {
           expandedCombos += (operatorCombo + listOf(operator))
@@ -81,41 +82,74 @@ data class Day07B(
 ) {
   fun solve(input: String = this.input): BigInteger {
     val lines = input.split("\n")
-    val resultsToOperands = lines.map { line ->
+
+
+    val resultsToNestedOperands = lines.map { line ->
       val result = line.split(":")[0].toBigInteger()
-      val operands = line.split(":")[1].trim().split(" ").map { it.toBigInteger() }
-      result to operands
+      val stringOperands = line.split(":")[1].trim().split(" ")
+      val nestedOperands = joinOrConcatenate(stringOperands).map { it.map { it.toBigInteger() } }
+      result to nestedOperands
     }
 
-    return resultsToOperands
-      .filter { (result, operands) -> isPossible(result, operands) }
+    return resultsToNestedOperands
+      .filter { (result, operandsTable) ->
+        operandsTable.any { operandsRow -> validOperationExists(result, operandsRow) }
+      }
       .fold(BigInteger.ZERO) { acc, (result, _) -> acc + result }
   }
 
-  private fun isPossible(result: BigInteger, operands: List<BigInteger>): Boolean {
-    val operatorCombos = operatorCombos(operands)
+  fun joinOrConcatenate(operandsRow: List<String>): List<List<String>> {
+    val join = "";
+    val separate = "_"
+    val separatorTable = Truthtable.bits(operandsRow.size - 1)
+      // map bools from truthtable to " " or "" and add one empty "" as
+      // last element to make it the same size as the operands
+      .map { boolRow -> (boolRow.map { if (it) separate else join } + join) }
 
-    return operatorCombos.any { combo ->
-      result == combo.foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
+    val newOperandsTable = mutableListOf<List<String>>()
+
+    for (separatorRow in separatorTable) {
+      val joinedOperandsRow = operandsRow
+        .reduceIndexed { i, acc, int ->
+          "$acc${separatorRow[i - 1]}$int"
+        }
+      newOperandsTable += joinedOperandsRow.split(separate)
     }
+    return newOperandsTable.also { println(it) }
   }
 
-  private fun operatorCombos(operands: List<BigInteger>):
-      Set<List<(left: BigInteger, right: BigInteger) -> BigInteger>> {
+  fun validOperationExists(result: BigInteger, operands: List<BigInteger>): Boolean {
+    if (operands.size == 1) return result == operands.first()
+    val operationsTable = OperationsTable.ops(operands.size - 1)
 
-    val operators = setOf(BigInteger::plus, BigInteger::multiply)
-    var operatorCombos = setOf(listOf<(left: BigInteger, right: BigInteger) -> BigInteger>())
-
-    for (operand in 1..operands.lastIndex) {
-      val expandedCombos = mutableSetOf<List<(left: BigInteger, right: BigInteger) -> BigInteger>>()
-      for (operatorCombo in operatorCombos) {
-        for (operator in operators) {
-          expandedCombos += (operatorCombo + listOf(operator))
-        }
-      }
-      operatorCombos = expandedCombos
+    return operationsTable.any { operationsRow ->
+      val operationsRowResult = operationsRow
+        .foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
+      result == operationsRowResult
     }
+  }
+}
 
-    return operatorCombos
+typealias Operation = (left: BigInteger, right: BigInteger) -> BigInteger
+
+object OperationsTable {
+  val tables = mutableMapOf<Int, List<List<Operation>>>()
+
+  fun ops(ops: Int): List<List<Operation>> {
+    tables.putIfAbsent(ops, buildTable(ops))
+    return tables[ops]!!
+  }
+
+  private fun buildTable(bits: Int): List<List<Operation>> {
+    var i = 0b00000
+    var rows = mutableListOf<List<Operation>>()
+    while (i < (2.0).pow(bits)) {
+      val bitString = i.toString(2).padStart(bits, '0')
+      val row: List<Operation> =
+        bitString.map { if (it == '1') BigInteger::add else BigInteger::multiply }
+      rows += listOf(row)
+      i++
+    }
+    return rows
   }
 }
