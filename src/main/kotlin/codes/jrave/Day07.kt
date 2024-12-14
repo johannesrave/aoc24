@@ -18,10 +18,10 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day07BTest = Day07B("input/test_07")
-  val day07BTestResult = day07BTest.solve()
-  println("Test result for Day07B: $day07BTestResult")
-  assert(day07BTestResult == 11387.toBigInteger())
+//  val day07BTest = Day07B("input/test_07")
+//  val day07BTestResult = day07BTest.solve()
+//  println("Test result for Day07B: $day07BTestResult")
+//  assert(day07BTestResult == 11387.toBigInteger())
 //
 //  val day07B = Day07B("input/input_07")
 //  val duration07B = measureTimeMillis {
@@ -38,22 +38,27 @@ data class Day07A(
 ) {
   fun solve(input: String = this.input): BigInteger {
     val lines = input.split("\n")
+
     val resultsToOperands = lines.map { line ->
       val result = line.split(":")[0].toBigInteger()
       val operands = line.split(":")[1].trim().split(" ").map { it.toBigInteger() }
       result to operands
     }
 
+    val allowedOperations = listOf(BigInteger::add, BigInteger::multiply)
+    val operationsTable = OperationVariationsTable(allowedOperations)
+
     return resultsToOperands
-      .filter { (result, operands) -> validOperationExists(result, operands) }
+      .filter { (result, operands) -> validOperationExists(result, operands, operationsTable) }
       .fold(BigInteger.ZERO) { acc, (result, _) -> acc + result }
   }
 
-  fun validOperationExists(result: BigInteger, operands: List<BigInteger>): Boolean {
-    if (operands.size == 1) return result == operands.first()
-    val operationsTable = OperationsTable.ops(operands.size - 1)
-
-    return operationsTable.any { operationsRow ->
+  fun validOperationExists(
+    result: BigInteger,
+    operands: List<BigInteger>,
+    operationsTable: OperationVariationsTable
+  ): Boolean {
+    return operationsTable[operands.size - 1].any { operationsRow ->
       val operationsRowResult = operationsRow
         .foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
       result == operationsRowResult
@@ -61,62 +66,65 @@ data class Day07A(
   }
 }
 
-data class Day07B(
-  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
-) {
-  fun solve(input: String = this.input): BigInteger {
-    val lines = input.split("\n")
-
-
-    val resultsToNestedOperands = lines.map { line ->
-      val result = line.split(":")[0].toBigInteger()
-      val stringOperands = line.split(":")[1].trim().split(" ")
-      val nestedOperands = joinOrConcatenate(stringOperands).map { it.map { it.toBigInteger() } }
-      result to nestedOperands
-    }
-
-    return resultsToNestedOperands
-      .filter { (result, operandsTable) ->
-        operandsTable.any { operandsRow -> validOperationExists(result, operandsRow) }
-      }
-      .fold(BigInteger.ZERO) { acc, (result, _) -> acc + result }
-  }
-
-  fun joinOrConcatenate(operandsRow: List<String>): List<List<String>> {
-    val join = "";
-    val separate = "_"
-    val separatorTable = Truthtable.bits(operandsRow.size - 1)
-      // map bools from truthtable to " " or "" and add one empty "" as
-      // last element to make it the same size as the operands
-      .map { boolRow -> (boolRow.map { if (it) separate else join } + join) }
-
-    val newOperandsTable = mutableListOf<List<String>>()
-
-    for (separatorRow in separatorTable) {
-      val joinedOperandsRow = operandsRow
-        .reduceIndexed { i, acc, int ->
-          "$acc${separatorRow[i - 1]}$int"
-        }
-      newOperandsTable += joinedOperandsRow.split(separate)
-    }
-    return newOperandsTable.also { println(it) }
-  }
-
-  fun validOperationExists(result: BigInteger, operands: List<BigInteger>): Boolean {
-    if (operands.size == 1) return result == operands.first()
-    val operationsTable = OperationsTable.ops(operands.size - 1)
-
-    return operationsTable.any { operationsRow ->
-      val operationsRowResult = operationsRow
-        .foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
-      result == operationsRowResult
-    }
-  }
-}
+//data class Day07B(
+//  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
+//) {
+//  fun solve(input: String = this.input): BigInteger {
+//    val lines = input.split("\n")
+//
+//
+//    val resultsToNestedOperands = lines.map { line ->
+//      val result = line.split(":")[0].toBigInteger()
+//      val stringOperands = line.split(":")[1].trim().split(" ")
+//      val nestedOperands = joinOrConcatenate(stringOperands).map { it.map { it.toBigInteger() } }
+//      result to nestedOperands
+//    }
+//
+//    return resultsToNestedOperands
+//      .filter { (result, operandsTable) ->
+//        operandsTable.any { operandsRow -> validOperationExists(result, operandsRow) }
+//      }
+//      .fold(BigInteger.ZERO) { acc, (result, _) -> acc + result }
+//  }
+//
+//  fun joinOrConcatenate(operandsRow: List<String>): List<List<String>> {
+//    val join = "";
+//    val separate = "_"
+//    val separatorTable = Truthtable.bits(operandsRow.size - 1)
+//      // map bools from truthtable to " " or "" and add one empty "" as
+//      // last element to make it the same size as the operands
+//      .map { boolRow -> (boolRow.map { if (it) separate else join } + join) }
+//
+//    val newOperandsTable = mutableListOf<List<String>>()
+//
+//    for (separatorRow in separatorTable) {
+//      val joinedOperandsRow = operandsRow
+//        .reduceIndexed { i, acc, int ->
+//          "$acc${separatorRow[i - 1]}$int"
+//        }
+//      newOperandsTable += joinedOperandsRow.split(separate)
+//    }
+//    return newOperandsTable.also { println(it) }
+//  }
+//
+//  fun validOperationExists(result: BigInteger, operands: List<BigInteger>): Boolean {
+//    if (operands.size == 1) return result == operands.first()
+//    val operationsTable = OperationsTable_.ops(operands.size - 1)
+//
+//    return operationsTable.any { operationsRow ->
+//      val operationsRowResult = operationsRow
+//        .foldIndexed(operands.first()) { i, acc, op -> op(acc, operands[i + 1]) }
+//      result == operationsRowResult
+//    }
+//  }
+//}
 
 typealias Operation = (left: BigInteger, right: BigInteger) -> BigInteger
 
-object OperationsTable {
+fun BigInteger.concatenate(other: BigInteger): BigInteger =
+  (this.toString() + other.toString()).toBigInteger()
+
+object OperationsTable_ {
   val tables = mutableMapOf<Int, List<List<Operation>>>()
 
   fun ops(ops: Int): List<List<Operation>> {
@@ -135,5 +143,20 @@ object OperationsTable {
       i++
     }
     return rows
+  }
+}
+
+data class OperationVariationsTable(val ops: List<Operation>) {
+  val tables = mutableMapOf<Int, List<List<Operation>>>()
+
+  operator fun get(width: Int): List<List<Operation>> {
+    tables.putIfAbsent(width, buildTable(width))
+    return tables[width]!!
+  }
+
+  private fun buildTable(bits: Int): List<List<Operation>> {
+    val variants = ops.size
+    return VariationsTable[bits, variants.toDouble()]
+      .map { row -> row.map { i -> ops[i] } }
   }
 }

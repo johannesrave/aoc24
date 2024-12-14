@@ -2,34 +2,35 @@ package codes.jrave
 
 import kotlin.math.pow
 
-class Util {
-}
-
 fun main() {
+
+  val variationTable = VariationsTable
   for (i in 1..5) {
-    println(Truthtable.bits(i))
+    println(variationTable[i])
   }
 
   for (i in 1..3) {
-    println(Truthtable.bits(i, 3.0))
+    println(variationTable[i, 3.0])
   }
 }
 
 
-object Truthtable {
-  val tables = mutableMapOf<Pair<Int, Double>, List<List<Boolean>>>()
+object VariationsTable {
+  private val tables = mutableMapOf<Pair<Int, Double>, List<IntArray>>()
 
-  fun bits(bits: Int, variants: Double = 2.0): List<List<Boolean>> {
-    tables.putIfAbsent(bits to variants, buildTable(bits, variants))
+  operator fun get(bits: Int, variants: Double = 2.0): List<IntArray> {
+    tables.computeIfAbsent(bits to variants) { buildTable(bits, variants) }
     return tables[bits to variants]!!
   }
 
-  private fun buildTable(bits: Int, variants: Double = 2.0): List<List<Boolean>> {
-    var i = 0b00000
-    val rows = mutableListOf<List<Boolean>>()
+  private fun buildTable(bits: Int, variants: Double = 2.0): List<IntArray> {
+    if (variants > 9.0) throw IllegalArgumentException("Variants can't be more than 9")
+    println("Building table for $bits bits and $variants variants")
+    var i = 0b0
+    val rows = mutableListOf<IntArray>()
     while (i < variants.pow(bits)) {
-      val bitString = i.toString(variants.toInt()).padStart(bits, '0').also { println(it) }
-      rows += bitString.map { if (it == '1') true else false }
+      val bitString = i.toString(variants.toInt()).padStart(bits, '0')
+      rows += bitString.map { it.toString().toInt() }.toIntArray()
       i++
     }
     return rows
