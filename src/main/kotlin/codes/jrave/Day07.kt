@@ -100,7 +100,7 @@ data class OperationVariationsTable(val operations: List<Operation>) {
   }
 
   private fun buildTable(noOfOperands: Int): List<List<Operation>> {
-    println("Building OperationVariationTable for $noOfOperands operands")
+    println("Building OperationVariationsTable for $noOfOperands operands")
     val variants = operations.size
     return VariationsTable[noOfOperands, variants.toDouble()]
       .map { row -> row.map { i -> operations[i] } }
