@@ -81,7 +81,52 @@ data class Day09B(
 ) {
   fun solve(input: String = this.input): BigInteger {
 
-    var memory = mutableListOf<MemoryLocation>()
+    var memory = parseMemory(input)
+
+    memory.also { println(it) }
+
+    val nOfFiles = memory.count { it is File }
+    val checkedIds = mutableSetOf<BigInteger>()
+
+    while (checkedIds.size < nOfFiles) {
+
+      // find the next index of a file that hasn't been checked from the end of the memory
+      // there must always be one, or the while loop would've terminated
+      val fileIndex = memory.indexOfLast { file -> file is File && file.id !in checkedIds }
+
+      // fetch the file at that index and mark it as 'checked'
+      val file = (memory[fileIndex] as File).also { file -> checkedIds.add(file.id) }
+
+      // look for the index of a slot (empty memory location) what is long/wide enough to accept the file
+      val slotIndex = memory.subList(0, fileIndex)
+        .indexOfFirst { slot -> slot is Slot && slot.length >= file.length }
+
+      // if there is no such slot, leave everthing as it is and move on to the next file
+      if (slotIndex == -1) continue;
+
+      // fetch the slot object at the index and shorten it by the length of the file.
+      val slot = memory[slotIndex] as Slot
+      slot.length -= file.length
+
+      // remove the file from the memory and replace it with an empty Slot of the same length
+      memory.removeAt(fileIndex)
+      memory.add(fileIndex, Slot(file.length))
+
+      // add the file back into memory at the location where we found the slot earlier
+      memory.add(slotIndex, file)
+
+      // the process creates neighbouring Slot objects in memory as well as Slots of length 0
+      // we brute force cleaning the length-0 ones and merging the others.
+      memory = cleanAndMergeNeighbouringSlots(memory)
+    }
+
+    memory.also { println(it) }
+
+    return calculateChecksum(memory)
+  }
+
+  private fun parseMemory(input: String): MutableList<MemoryLocation> {
+    val memory = mutableListOf<MemoryLocation>()
     var idCounter = 0.toBigInteger()
     input
       .also { println(it) }
@@ -94,61 +139,46 @@ data class Day09B(
           memory += Slot(n)
         }
       }
+    return memory
+  }
 
-    memory.also { println(it) }
-
-    val nOfFiles = memory.count { it is File }
-    val checkedIds = mutableSetOf<BigInteger>()
-
-    while (checkedIds.size < nOfFiles) {
-      val fileIndex = memory
-        .indexOfLast { file -> file is File && file.id !in checkedIds }
-
-      val file = memory[fileIndex] as File
-      checkedIds.add(file.id)
-
-      val slotIndex = memory.subList(0, fileIndex)
-        .indexOfFirst { slot -> slot is Slot && slot.length >= file.length }
-
-      if (slotIndex == -1) continue;
-
-      val slot = memory[slotIndex] as Slot
-
-      slot.length -= file.length
-
-      memory.removeAt(fileIndex)
-      memory.add(fileIndex, Slot(file.length))
-      memory.add(slotIndex, file)
-
-      memory = memory.mapIndexedNotNull { i, location ->
-        when {
-          location !is Slot -> location
-          location.length == 0 -> null
-          (i + 1 in memory.indices && memory[i + 1] is Slot) -> {
-            val nextLocation = memory[i + 1] as Slot
-            location.length += nextLocation.length
-            nextLocation.length = 0
-            location
-          }
-          else -> location
+  private fun cleanAndMergeNeighbouringSlots(memory: MutableList<MemoryLocation>): MutableList<MemoryLocation> {
+    var memory1 = memory
+    memory1 = memory1.mapIndexedNotNull { i, location ->
+      when {
+        location !is Slot -> location
+        location.length == 0 -> null
+        (i + 1 in memory1.indices && memory1[i + 1] is Slot) -> {
+          val nextLocation = memory1[i + 1] as Slot
+          location.length += nextLocation.length
+          nextLocation.length = 0
+          location
         }
-      }.toMutableList()
-    }
 
-    memory.also { println(it) }
+        else -> location
+      }
+    }.toMutableList()
+    return memory1
+  }
 
+  private fun calculateChecksum(memory: MutableList<MemoryLocation>): BigInteger {
     var checkSum = 0.toBigInteger()
     var index = 0
     for (location in memory) {
+      // for each file in memory, calculate its checksum by
+      // multiplying its id with the index of each of its blocks
+      // (so in the range from its first index until the last block whose location is index+file.length-1)
       if (location is File) {
-        for (i in index..<(index + location.length)) {
+        val indexOfLastFileBlock = index + location.length
+        for (i in index..<indexOfLastFileBlock) {
           checkSum += location.id * i.toBigInteger()
         }
       }
 
+      // we need to manually manage the index when walking over both Files and Slots,
+      // as we're not using the natural index of the memory list (where items have varying length)
       index += location.length
     }
-
     return checkSum
   }
 
