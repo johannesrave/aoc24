@@ -1,21 +1,22 @@
 plugins {
-    kotlin("jvm") version "2.0.20"
+  kotlin("jvm") version "2.0.20"
 }
 
 group = "codes.jrave"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+  testImplementation(kotlin("test"))
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
 
 tasks.test {
-    useJUnitPlatform()
+  useJUnitPlatform()
 }
 kotlin {
-    jvmToolchain(21)
+  jvmToolchain(21)
 }
