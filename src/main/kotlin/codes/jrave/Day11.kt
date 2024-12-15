@@ -3,7 +3,6 @@ package codes.jrave
 import java.io.File
 import java.math.BigInteger
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.async
 
 fun main() {
   val day11ATest = Day11A("input/test_11")
@@ -52,39 +51,37 @@ data class Day11B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): BigInteger {
-    val initialStones = input.split(" ").map { n -> Stone(n) }.toMutableList()
+    var stones = input.split(" ").toMutableList().asSequence()
     val blinks = 75
 
-    var queueOfLists = mutableListOf(initialStones)
-    for (i in 0..<blinks) {
-      if (i % 5 == 0 || i > blinks - 5) {
-        println(
-          "after $i blinks there are this many stones: ${
-            queueOfLists.map { it.size.toBigInteger() }.sum()
-          }"
-        )
+    for (blink in 0..<blinks) {
+      if (blink % 5 == 0 || blink > blinks - 5) {
+        println("after $blink blinks there are this many stones: ${stones.count()}")
       }
-      val queueBuffer = mutableListOf<MutableList<Stone>>()
-      for (list in queueOfLists) {
-        val listBuffer = mutableListOf<Stone>()
-        for (stone in list) {
-          val n = stone.n
-          when {
-            n == "0" -> listBuffer.add(Stone("1"))
-            n.length % 2 == 0 -> {
-              val left = n.substring(0, n.length / 2)
-              val right = n.substring(n.length / 2).toBigInteger().toString()
-              listBuffer.add(Stone(left))
-              listBuffer.add(Stone(right))
-            }
-            else -> listBuffer.add(Stone((n.toBigInteger() * 2024.toBigInteger()).toString()))
+
+      val stonesBuffer = mutableListOf<String>()
+      for (stone in stones) {
+        when {
+          stone == "0" -> {
+            stonesBuffer.add("1")
+          }
+
+          stone.length % 2 == 0 -> {
+            val left = stone.substring(0, stone.length / 2)
+            val right = stone.substring(stone.length / 2).toBigInteger().toString()
+            stonesBuffer.add(left)
+            stonesBuffer.add(right)
+          }
+
+          else -> {
+            stonesBuffer.add((stone.toBigInteger() * 2024.toBigInteger()).toString())
           }
         }
-        queueBuffer.addAll(listBuffer.chunked(1_000_000).map { it.toMutableList() })
       }
-      queueOfLists = queueBuffer
+      stones = stonesBuffer.asSequence()
     }
-    return queueOfLists.map { it.size.toBigInteger() }.sum()
+
+    return stones.count().toBigInteger()
   }
 }
 
