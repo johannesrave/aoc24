@@ -67,6 +67,29 @@ data class Day10B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): Int {
-    return 0
+    val board = parseBoard(input)
+    val startingPositions = board.findPositions(setOf('0'))
+
+    val trailheads = startingPositions.map { startingPosition ->
+
+      val queue = mutableListOf(startingPosition)
+      val peaksReached = mutableListOf<Pos>()
+
+      while (queue.isNotEmpty()) {
+        val lastPos = queue.removeFirst()
+        for (dir in Direction.entries) {
+          val lookAheadPos = lastPos + dir
+          if (lookAheadPos in board && board[lookAheadPos] == board[lastPos] + 1) {
+            if (board[lookAheadPos] == '9') {
+              peaksReached.add(lookAheadPos)
+            } else {
+              queue.add(lookAheadPos)
+            }
+          }
+        }
+      }
+      peaksReached.size
+    }
+    return trailheads.sum()
   }
 }
