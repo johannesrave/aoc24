@@ -1,5 +1,6 @@
 package codes.jrave
 
+import java.math.BigInteger
 import kotlin.math.pow
 
 fun main() {
@@ -36,3 +37,5 @@ object VariationsTable {
     return rows
   }
 }
+
+fun List<BigInteger>.sum(): BigInteger = this.reduce(BigInteger::plus)

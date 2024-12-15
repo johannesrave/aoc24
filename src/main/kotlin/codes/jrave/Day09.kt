@@ -74,8 +74,6 @@ data class Day09A(
   }
 }
 
-private fun List<BigInteger>.sum(): BigInteger = this.reduce(BigInteger::plus)
-
 data class Day09B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
