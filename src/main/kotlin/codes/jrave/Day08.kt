@@ -26,7 +26,7 @@ fun main() {
   val duration08B = measureTimeMillis {
     val solution = day08B.solve()
     println("Solution for Day08B: $solution")
-    assert(solution == 1)
+    assert(solution == 1147)
   }
   println("Solution took $duration08B milliseconds")
 }
@@ -91,7 +91,7 @@ data class Day08B(
       }
     }
 
-    charsToPostions.also { println(it) }
+//    charsToPostions.also { println(it) }
 
     val antinodes = mutableSetOf<Pos>()
 
@@ -110,7 +110,7 @@ data class Day08B(
       }
     }
 
-    println(board.markPositions(antinodes.toList(), '#').toPrintString())
+//    println(board.markPositions(antinodes.toList(), '#').toPrintString())
 
     return antinodes.size
   }

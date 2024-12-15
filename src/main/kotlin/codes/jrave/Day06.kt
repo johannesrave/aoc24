@@ -38,7 +38,7 @@ data class Day06A(
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
 
-    val guardPosition = board.findPosition(directionMarkers)
+    val guardPosition = board.findFirstPosition(directionMarkers)
     val guardMarker = board[guardPosition]
     val direction = Direction.from(guardMarker)
 
@@ -78,7 +78,7 @@ data class Day06B(
     val board = parseBoard(input)
     val blockMarker = '#'
 
-    val initialPosition = board.findPosition(directionMarkers)
+    val initialPosition = board.findFirstPosition(directionMarkers)
     val directionMarker = board[initialPosition]
     val initialDirection = Direction.from(directionMarker)
 

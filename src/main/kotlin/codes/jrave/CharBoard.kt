@@ -11,6 +11,16 @@ fun emptyBoard(dim: Int, nullChar: Char? = null): Array<CharArray> =
 fun emptyBoard(rows: Int, cols: Int, nullChar: Char? = null): Array<CharArray> =
   Array(rows) { nullChar?.let { CharArray(cols).also { it.fill(nullChar) } } ?: CharArray(cols) }
 
+
+fun emptyBoard(board: Array<CharArray>, nullChar: Char? = null): Array<CharArray> {
+  val rows = board.size
+  val cols = board.first().size
+  return Array(rows) {
+    nullChar?.let { CharArray(cols).also { it.fill(nullChar) } }
+      ?: CharArray(cols)
+  }
+}
+
 fun Array<CharArray>.toPrintString(): String = joinEach().joinToString("\n")
 
 fun Array<CharArray>.transpose(): Array<CharArray> =
@@ -48,7 +58,7 @@ fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> =
   .dropLastWhile { row -> row.all { it == nullChar } }
   .toTypedArray()
 
-fun Array<CharArray>.findPosition(chars: Set<Char>): Pos {
+fun Array<CharArray>.findFirstPosition(chars: Set<Char>): Pos {
   return mapIndexedNotNull { y, row ->
     if (chars.any { it in row }) {
       val x = row.indexOfFirst { it in chars }
@@ -56,6 +66,13 @@ fun Array<CharArray>.findPosition(chars: Set<Char>): Pos {
     } else null
   }.first()
 }
+
+fun Array<CharArray>.findPositions(chars: Set<Char>): Set<Pos> =
+  flatMapIndexed { y, row ->
+    row
+      .mapIndexed { x, c -> if (c in chars) Pos(y, x) else null }
+      .filterNotNull()
+  }.toSet()
 
 operator fun Array<CharArray>.get(pos: Pos): Char = this[pos.y][pos.x]
 operator fun Array<CharArray>.set(pos: Pos, char: Char) {
