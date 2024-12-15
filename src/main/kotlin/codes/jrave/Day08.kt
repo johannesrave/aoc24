@@ -1,7 +1,6 @@
 package codes.jrave
 
 import java.io.File
-import java.math.BigInteger
 import kotlin.system.measureTimeMillis
 
 fun main() {

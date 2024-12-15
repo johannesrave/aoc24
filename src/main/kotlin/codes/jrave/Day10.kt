@@ -26,7 +26,7 @@ fun main() {
   val duration10B = measureTimeMillis {
     val solution = day10B.solve()
     println("Solution for Day10B: $solution")
-    assert(solution == 1)
+    assert(solution == 1651)
   }
   println("Solution took $duration10B milliseconds")
 }
