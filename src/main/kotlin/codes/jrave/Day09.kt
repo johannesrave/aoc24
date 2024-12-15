@@ -2,33 +2,34 @@ package codes.jrave
 
 import java.io.File
 import java.math.BigInteger
+import kotlin.system.measureTimeMillis
 
 fun main() {
-//  val day09ATest = Day09A("input/test_09")
-//  val day09ATestResult = day09ATest.solve()
-//  println("Test result for Day09A: $day09ATestResult")
-//  assert(day09ATestResult == 1928.toBigInteger())
-//
-//  val day09A = Day09A("input/input_09")
-//  val durationA = measureTimeMillis {
-//    val solution = day09A.solve()
-//    println("Solution for Day09A: $solution")
-//    assert(solution > 152661574.toBigInteger())
-//  }
-//  println("Solution took $durationA milliseconds")
+  val day09ATest = Day09A("input/test_09")
+  val day09ATestResult = day09ATest.solve()
+  println("Test result for Day09A: $day09ATestResult")
+  assert(day09ATestResult == 1928.toBigInteger())
+
+  val day09A = Day09A("input/input_09")
+  val durationA = measureTimeMillis {
+    val solution = day09A.solve()
+    println("Solution for Day09A: $solution")
+    assert(solution > 152661574.toBigInteger())
+  }
+  println("Solution took $durationA milliseconds")
 
   val day09BTest = Day09B("input/test_09")
   val day09BTestResult = day09BTest.solve()
   println("Test result for Day09B: $day09BTestResult")
   assert(day09BTestResult == 2858.toBigInteger())
-//
-//  val day09B = Day09B("input/input_09")
-//  val duration09B = measureTimeMillis {
-//    val solution = day09B.solve()
-//    println("Solution for Day09B: $solution")
-//    assert(solution == 1)
-//  }
-//  println("Solution took $duration09B milliseconds")
+
+  val day09B = Day09B("input/input_09")
+  val duration09B = measureTimeMillis {
+    val solution = day09B.solve()
+    println("Solution for Day09B: $solution")
+    assert(solution == 6448168620520.toBigInteger())
+  }
+  println("Solution took $duration09B milliseconds")
 }
 
 
@@ -106,7 +107,7 @@ data class Day09B(
       val file = memory[fileIndex] as File
       checkedIds.add(file.id)
 
-      val slotIndex = memory
+      val slotIndex = memory.subList(0, fileIndex)
         .indexOfFirst { slot -> slot is Slot && slot.length >= file.length }
 
       if (slotIndex == -1) continue;
@@ -116,23 +117,23 @@ data class Day09B(
       slot.length -= file.length
 
       memory.removeAt(fileIndex)
-//      if (slot.length == 0) memory.removeAt(slotIndex)
+      memory.add(fileIndex, Slot(file.length))
       memory.add(slotIndex, file)
 
-      memory.reverse()
-      memory.forEachIndexed { i, location ->
-        val nextLocation = if (i != memory.lastIndex) memory[i + 1]
-        else return@forEachIndexed;
-        if (location is Slot && nextLocation is Slot) {
-          nextLocation.length += location.length
-          location.length = 0
+      memory = memory.mapIndexedNotNull { i, location ->
+        when {
+          location !is Slot -> location
+          location.length == 0 -> null
+          (i + 1 in memory.indices && memory[i + 1] is Slot) -> {
+            val nextLocation = memory[i + 1] as Slot
+            location.length += nextLocation.length
+            nextLocation.length = 0
+            location
+          }
+          else -> location
         }
-      }
-      memory.reverse()
-      memory = memory.filter { it is Slot && it.length == 0 }.toMutableList()
+      }.toMutableList()
     }
-
-
 
     memory.also { println(it) }
 
@@ -147,8 +148,6 @@ data class Day09B(
 
       index += location.length
     }
-
-//    checksums.also { println(it) }
 
     return checkSum
   }
