@@ -22,13 +22,13 @@ fun main() {
   val day11BTest = Day11B("input/test_11")
   val day11BTestResult = day11BTest.solve()
   println("Test result for Day11B: $day11BTestResult")
-//  assert(day11BTestResult == 55312.toBigInteger())
+  assert(day11BTestResult == 65601038650482.toBigInteger())
 
   val day11B = Day11B("input/input_11")
   val duration11B = measureTimeMillis {
     val solution = day11B.solve()
     println("Solution for Day11B: $solution")
-    assert(solution == 1.toBigInteger())
+    assert(solution == 276661131175807.toBigInteger())
   }
   println("Solution took $duration11B milliseconds")
 }
