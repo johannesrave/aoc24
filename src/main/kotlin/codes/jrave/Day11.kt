@@ -1,5 +1,6 @@
 package codes.jrave
 
+import arrow.core.memoize
 import java.io.File
 import java.math.BigInteger
 import kotlin.system.measureTimeMillis
@@ -51,39 +52,54 @@ data class Day11B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): BigInteger {
-    var stones = input.split(" ").toMutableList().asSequence()
     val blinks = 75
+    val stones = input.split(" ").map { Pair(it, blinks) }.toMutableList()
 
-    for (blink in 0..<blinks) {
-      if (blink % 5 == 0 || blink > blinks - 5) {
-        println("after $blink blinks there are this many stones: ${stones.count()}")
+    val printInterval = 1_000_000_000.toBigInteger()
+    var counter = BigInteger.ZERO
+
+    while (stones.isNotEmpty()) {
+      val (value, blink) = stones.removeLast()
+      if (blink == 0) {
+        counter += BigInteger.ONE
+      } else (stones.addAll(memoizedTransform(value).map { it to blink - 1 }))
+      if (counter % printInterval == BigInteger.ZERO) {
+        println("Counter: $counter")
+        println("Queue: ${stones.size}")
       }
-
-      val stonesBuffer = mutableListOf<String>()
-      for (stone in stones) {
-        when {
-          stone == "0" -> {
-            stonesBuffer.add("1")
-          }
-
-          stone.length % 2 == 0 -> {
-            val left = stone.substring(0, stone.length / 2)
-            val right = stone.substring(stone.length / 2).toBigInteger().toString()
-            stonesBuffer.add(left)
-            stonesBuffer.add(right)
-          }
-
-          else -> {
-            stonesBuffer.add((stone.toBigInteger() * 2024.toBigInteger()).toString())
-          }
-        }
-      }
-      stones = stonesBuffer.asSequence()
     }
 
-    return stones.count().toBigInteger()
+    return counter
   }
+
 }
+
+
+fun transform(n: String, blinks: Int): List<Pair<String, Int>> = when {
+  blinks == 0 -> emptyList()
+  n == "0" -> listOf(Pair("1", blinks - 1))
+  n.length % 2 == 0 -> {
+    val left = n.substring(0, n.length / 2)
+    val right = n.substring(n.length / 2).toBigInteger().toString()
+    listOf(Pair(left, blinks - 1), Pair(right, blinks - 1))
+  }
+
+  else -> listOf(Pair((n.toBigInteger() * 2024.toBigInteger()).toString(), blinks - 1))
+}
+
+fun transform1(n: String): List<String> = when {
+  n == "0" -> listOf("1")
+  n.length % 2 == 0 -> {
+    val left = n.substring(0, n.length / 2)
+    val right = n.substring(n.length / 2).toBigInteger().toString()
+    listOf(left, right)
+  }
+
+  else -> listOf((n.toBigInteger() * 2024.toBigInteger()).toString())
+}
+
+val memoizedTransform = ::transform1.memoize()
+
 
 private data class Stone(val n: String) {
   fun transform(): List<Stone> = when {
