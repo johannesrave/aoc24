@@ -86,7 +86,7 @@ infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
 fun Array<CharArray>.deepClone(): Array<CharArray> = Array(size) { get(it).clone() }
 
 
-fun Array<CharArray>.markPositions(positions: List<Pos>, char: Char = 'O'): Array<CharArray> =
+fun Array<CharArray>.markPositions(positions: Collection<Pos>, char: Char = 'O'): Array<CharArray> =
   deepClone().also { board -> positions.forEach { pos -> board[pos] = char } }
 
 
