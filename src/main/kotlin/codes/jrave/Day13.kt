@@ -89,13 +89,48 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
       return null
     }
 
+    val origin = Point(0.0, 0.0)
+    val aPointVector = Point(buttonA.x.toDouble(), buttonA.y.toDouble())
+
+    val target = Point(prize.x.toDouble(), prize.y.toDouble())
+    val bPointVector = Point(target.x + buttonB.x.toDouble(), target.y + buttonB.y.toDouble())
+
+    val aLine = Line(origin, aPointVector)
+    val bLine = Line(target, bPointVector)
+
+    val intersection = findIntersection(aLine, bLine)
+    println("intersection: $intersection")
+
+    println(intersection.x.toInt() % buttonA.x)
+    println(intersection.y.toInt() % buttonA.y)
+    println((prize.x - intersection.x.toInt()) % buttonB.x)
+    println((prize.y - intersection.y.toInt()) % buttonB.y)
+
+
+    if (
+      intersection.x.toInt() % buttonA.x == 0 &&
+      intersection.y.toInt() % buttonA.y == 0 &&
+      (prize.x - intersection.x.toInt()) % buttonB.x == 0 &&
+      (prize.y - intersection.y.toInt()) % buttonB.y == 0
+    ) {
+      val aPushes = intersection.x.toInt() / buttonA.x
+      val bPushes = (prize.x - intersection.x.toInt()) / buttonB.x
+      return (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
+    } else {
+      println("Couldn't find solution for: \n$this")
+
+      return null
+    }
+
+
+
     for (aPushes in maxPushes downTo 0) {
       val posAfterA = buttonA.push(Position(0, 0), aPushes)
       for (bPushes in maxPushes downTo 0) {
         val posAfterB = buttonB.push(posAfterA, bPushes)
         if (prize.x == posAfterB.x && prize.y == posAfterB.y) {
-//          println()
-//          println("$bPushes bPushes $aPushes aPushes")
+          println("posAfterA: $posAfterA")
+          println("$bPushes bPushes $aPushes aPushes")
           return (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
         }
       }
@@ -105,4 +140,27 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
 
     return null
   }
+}
+
+
+// line intersection code taken from https://rosettacode.org/wiki/Find_the_intersection_of_two_lines#Kotlin
+
+data class Point(val x: Double, val y: Double) {
+  override fun toString() = "{$x, $y}"
+}
+
+data class Line(val A: Point, val B: Point)
+
+fun findIntersection(lineM: Line, lineN: Line): Point {
+  val a1 = lineM.B.y - lineM.A.y
+  val b1 = lineM.A.x - lineM.B.x
+  val c1 = a1 * lineM.A.x + b1 * lineM.A.y
+
+  val a2 = lineN.B.y - lineN.A.y
+  val b2 = lineN.A.x - lineN.B.x
+  val c2 = a2 * lineN.A.x + b2 * lineN.A.y
+
+  val delta = a1 * b2 - a2 * b1
+  // If lines are parallel, intersection point will contain infinite values
+  return Point((b2 * c1 - b1 * c2) / delta, (a1 * c2 - a2 * c1) / delta)
 }
