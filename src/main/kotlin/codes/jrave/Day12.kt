@@ -1,5 +1,6 @@
 package codes.jrave
 
+import codes.jrave.Direction.*
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -26,7 +27,7 @@ fun main() {
   val duration12B = measureTimeMillis {
     val solution = day12B.solve()
     println("Solution for Day12B: $solution")
-    assert(solution == 1)
+    assert(solution == 863366)
   }
   println("Solution took $duration12B milliseconds")
 }
@@ -69,7 +70,7 @@ private fun parseRegions(board: Array<CharArray>): MutableSet<MutableSet<Pos>> {
       if (visited[probePos] == visitedMarker) return@traverseRow
       visited[probePos] = visitedMarker
 
-      println("parsing region starting at $probePos")
+//      println("parsing region starting at $probePos")
 
       val region = mutableSetOf<Pos>()
       val queue = mutableListOf(probePos)
@@ -77,7 +78,7 @@ private fun parseRegions(board: Array<CharArray>): MutableSet<MutableSet<Pos>> {
       while (queue.isNotEmpty()) {
         val currentPos = queue.removeFirst()
         region.add(currentPos)
-        println("adding to region: $currentPos")
+//        println("adding to region: $currentPos")
 
         for (dir in Direction.entries) {
           val lookAheadPos = currentPos + dir
@@ -121,9 +122,68 @@ private fun countPlotsAndPerimetersPerRegion(regions: MutableSet<MutableSet<Pos>
 
 private fun countPlotsAndStraightPerimetersPerRegion(regions: MutableSet<MutableSet<Pos>>): List<Pair<Int, Int>> {
   val plotsToPerimeter = regions.map { region ->
-    region.size to region.fold(0) { acc, pos ->
-      Direction.entries.filterNot { dir -> (pos + dir) in region }.size + acc
+    val edges = findAllEdges(region).toMutableSet()
+//    println(edges)
+
+    val straightEdges = mutableListOf<List<Edge>>()
+
+    edges.forEach { edge ->
+      if (straightEdges.any { edge in it }) return@forEach;
+
+      val (pos, dir) = edge
+      val edgesOnSameRowOrColumn = edges
+        .filter { (_, otherDir) -> dir == otherDir }
+        .filter { (otherPos, _) ->
+          when (dir) {
+            N, S -> pos.y == otherPos.y
+            E, W -> pos.x == otherPos.x
+          }
+        }
+      val straightEdge = mutableListOf(edge)
+
+      val lookAheadDir = dir.turnClockwise()
+
+      val lookAheadPos = pos + lookAheadDir
+      var lookAheadEdge = lookAheadPos to dir
+
+      while (lookAheadEdge in edgesOnSameRowOrColumn) {
+        straightEdge.addLast(lookAheadEdge)
+        lookAheadEdge = (lookAheadEdge.first + lookAheadDir) to dir
+      }
+
+      val lookBehindDir = dir.turnCounterClockwise()
+
+      val lookBehindPos = pos + lookBehindDir
+      var lookBehindEdge = lookBehindPos to dir
+
+      while (lookBehindEdge in edgesOnSameRowOrColumn) {
+        straightEdge.addFirst(lookBehindEdge)
+        lookBehindEdge = (lookBehindEdge.first + lookBehindDir) to dir
+      }
+
+      println(straightEdge)
+
+      straightEdges.add(straightEdge)
+
     }
+
+    region.size to straightEdges.size
+
   }
   return plotsToPerimeter
 }
+
+fun findAllEdges(region: MutableSet<Pos>): List<Edge> {
+  val edges = mutableListOf<Edge>()
+
+  for (pos in region) {
+    for (dir in Direction.entries) {
+      if (pos + dir !in region) {
+        edges += pos to dir
+      }
+    }
+  }
+  return edges
+}
+
+typealias Edge = Pair<Pos, Direction>

@@ -106,6 +106,7 @@ enum class Direction(val x: Int, val y: Int, val c: Char) {
   N(0, -1, '^'), E(1, 0, '>'), S(0, 1, 'v'), W(-1, 0, '<'), ;
 
   fun turnClockwise() = turnBy(1)
+  fun turnCounterClockwise() = turnBy(3)
 
   private fun turnBy(n: Int) = entries[(this.ordinal + n) % entries.size]
 
