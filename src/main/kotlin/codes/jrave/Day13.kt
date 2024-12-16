@@ -13,7 +13,7 @@ fun main() {
   val durationA = measureTimeMillis {
     val solution = day13A.solve()
     println("Solution for Day13A: $solution")
-    assert(solution > 30747)
+    assert(solution == 36571)
   }
   println("Solution took $durationA milliseconds")
 
@@ -35,7 +35,7 @@ data class Day13A(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): Int {
-    val xyPattern = Regex("""X.(?<x>\d{2,4}).*Y.(?<y>\d{2,4})""")
+    val xyPattern = Regex("""X.(?<x>\d{2,6}).*Y.(?<y>\d{2,6})""")
     val games = parseGames(input, xyPattern)
 
 //    games.forEach(::println)
@@ -82,12 +82,6 @@ private data class Position(val x: Int, val y: Int)
 
 private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: ButtonB) {
   fun searchOptimalSolution(): Int? {
-    val maxPushes = 100
-    if (prize.x > maxPushes * (buttonA.x + buttonB.x) || prize.y > maxPushes * (buttonA.y + buttonB.y)) {
-      println()
-      println("can't even reach \n$this")
-      return null
-    }
 
     val origin = Point(0.0, 0.0)
     val aPointVector = Point(buttonA.x.toDouble(), buttonA.y.toDouble())
@@ -99,13 +93,13 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
     val bLine = Line(target, bPointVector)
 
     val intersection = findIntersection(aLine, bLine)
+
     println("intersection: $intersection")
 
     println(intersection.x.toInt() % buttonA.x)
     println(intersection.y.toInt() % buttonA.y)
     println((prize.x - intersection.x.toInt()) % buttonB.x)
     println((prize.y - intersection.y.toInt()) % buttonB.y)
-
 
     if (
       intersection.x.toInt() % buttonA.x == 0 &&
@@ -115,30 +109,22 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
     ) {
       val aPushes = intersection.x.toInt() / buttonA.x
       val bPushes = (prize.x - intersection.x.toInt()) / buttonB.x
-      return (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
-    } else {
-      println("Couldn't find solution for: \n$this")
 
+      val maxPushes = 100
+
+      if (aPushes > maxPushes || bPushes > maxPushes) {
+        println("more than $maxPushes per button needed to reach \n$this")
+        return null
+      }
+      val tokens = (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
+
+      println("$bPushes bPushes and $aPushes aPushes needed for $tokens to reach \n$this")
+      return tokens
+    } else {
+
+      println("Couldn't find solution for: \n$this")
       return null
     }
-
-
-
-    for (aPushes in maxPushes downTo 0) {
-      val posAfterA = buttonA.push(Position(0, 0), aPushes)
-      for (bPushes in maxPushes downTo 0) {
-        val posAfterB = buttonB.push(posAfterA, bPushes)
-        if (prize.x == posAfterB.x && prize.y == posAfterB.y) {
-          println("posAfterA: $posAfterA")
-          println("$bPushes bPushes $aPushes aPushes")
-          return (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
-        }
-      }
-    }
-    println()
-    println("Couldn't find solution for: \n$this")
-
-    return null
   }
 }
 
@@ -151,14 +137,14 @@ data class Point(val x: Double, val y: Double) {
 
 data class Line(val A: Point, val B: Point)
 
-fun findIntersection(lineM: Line, lineN: Line): Point {
-  val a1 = lineM.B.y - lineM.A.y
-  val b1 = lineM.A.x - lineM.B.x
-  val c1 = a1 * lineM.A.x + b1 * lineM.A.y
+fun findIntersection(line: Line, other: Line): Point {
+  val a1 = line.B.y - line.A.y
+  val b1 = line.A.x - line.B.x
+  val c1 = a1 * line.A.x + b1 * line.A.y
 
-  val a2 = lineN.B.y - lineN.A.y
-  val b2 = lineN.A.x - lineN.B.x
-  val c2 = a2 * lineN.A.x + b2 * lineN.A.y
+  val a2 = other.B.y - other.A.y
+  val b2 = other.A.x - other.B.x
+  val c2 = a2 * other.A.x + b2 * other.A.y
 
   val delta = a1 * b2 - a2 * b1
   // If lines are parallel, intersection point will contain infinite values
