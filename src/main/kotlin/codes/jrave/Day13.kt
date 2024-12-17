@@ -4,41 +4,56 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day13ATest = Day13A("input/test_13")
-  val day13ATestResult = day13ATest.solve()
-  println("Test result for Day13A: $day13ATestResult")
-  assert(day13ATestResult == 480)
-
-  val day13A = Day13A("input/input_13")
-  val durationA = measureTimeMillis {
-    val solution = day13A.solve()
-    println("Solution for Day13A: $solution")
-    assert(solution == 36571)
-  }
-  println("Solution took $durationA milliseconds")
+//  val day13ATest = Day13A("input/test_13")
+//  val day13ATestResult = day13ATest.solve()
+//  println("Test result for Day13A: $day13ATestResult")
+//  assert(day13ATestResult == 480.toDouble())
+//
+//  val day13A = Day13A("input/input_13")
+//  val durationA = measureTimeMillis {
+//    val solution = day13A.solve()
+//    println("Solution for Day13A: $solution")
+//    assert(solution == 36571.toDouble())
+//  }
+//  println("Solution took $durationA milliseconds")
 
   val day13BTest = Day13B("input/test_13")
   val day13BTestResult = day13BTest.solve()
-  println("Test result for Day13B: $day13BTestResult")
-  assert(day13BTestResult == 1)
+  println("Test result for Day13B: ${day13BTestResult.toLong()}")
+  assert(day13BTestResult == 875318608908.toDouble())
 
-  val day13B = Day13B("input/input_13")
-  val duration13B = measureTimeMillis {
-    val solution = day13B.solve()
-    println("Solution for Day13B: $solution")
-    assert(solution == 1)
-  }
-  println("Solution took $duration13B milliseconds")
+//  val day13B = Day13B("input/input_13")
+//  val duration13B = measureTimeMillis {
+//    val solution = day13B.solve()
+//    println("Solution for Day13B: ${solution.toLong()}")
+//    assert(solution > 75171399383205.toDouble())
+//  }
+//  println("Solution took $duration13B milliseconds")
 }
 
 data class Day13A(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
+  fun solve(input: String = this.input): Double {
     val xyPattern = Regex("""X.(?<x>\d{2,6}).*Y.(?<y>\d{2,6})""")
     val games = parseGames(input, xyPattern)
 
 //    games.forEach(::println)
+
+    return games.mapNotNull { game -> game.searchOptimalSolution() }.sum()
+  }
+}
+
+data class Day13B(
+  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
+) {
+  fun solve(input: String = this.input): Double {
+    val xyPattern = Regex("""X.(?<x>\d{2,6}).*Y.(?<y>\d{2,6})""")
+    val games =
+      parseGames(input, xyPattern).map { game: Game ->
+        val prize = game.prize
+        game.copy(prize = prize.copy(x = prize.x + 10000000000000, y = prize.y + 10000000000000))
+      }
 
     return games.mapNotNull { game -> game.searchOptimalSolution() }.sum()
   }
@@ -49,73 +64,59 @@ private fun parseGames(input: String, xyPattern: Regex) = input.split("\n\n")
     val lines = block.split("\n")
     val buttonA = lines[0]
       .let { xyPattern.find(it)?.groups as MatchNamedGroupCollection }
-      .let { ButtonA(it["x"]!!.value.toInt(), it["y"]!!.value.toInt()) }
+      .let { ButtonA(it["x"]!!.value.toDouble(), it["y"]!!.value.toDouble()) }
     val buttonB = lines[1]
       .let { xyPattern.find(it)?.groups as MatchNamedGroupCollection }
-      .let { ButtonB(it["x"]!!.value.toInt(), it["y"]!!.value.toInt()) }
+      .let { ButtonB(it["x"]!!.value.toDouble(), it["y"]!!.value.toDouble()) }
     val prize = lines[2]
       .let { xyPattern.find(it)?.groups as MatchNamedGroupCollection }
-      .let { Prize(it["x"]!!.value.toInt(), it["y"]!!.value.toInt()) }
+      .let { Prize(it["x"]!!.value.toDouble(), it["y"]!!.value.toDouble()) }
 
     Game(prize, buttonA, buttonB)
   }
 
-data class Day13B(
-  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
-) {
-  fun solve(input: String = this.input): Int {
-    return 0
-  }
-}
-
-private sealed class Button(open val x: Int, open val y: Int, open val cost: Int) {
+private sealed class Button(open val x: Double, open val y: Double, open val cost: Int) {
   fun push(position: Position, times: Int = 1): Position =
     Position(position.x + (times * x), position.y + (times * y))
 }
 
-private data class ButtonA(override val x: Int, override val y: Int) : Button(x, y, 3)
-private data class ButtonB(override val x: Int, override val y: Int) : Button(x, y, 1)
+private data class ButtonA(override val x: Double, override val y: Double) : Button(x, y, 3)
+private data class ButtonB(override val x: Double, override val y: Double) : Button(x, y, 1)
 
-private data class Prize(val x: Int, val y: Int)
+private data class Prize(val x: Double, val y: Double)
 
-private data class Position(val x: Int, val y: Int)
+private data class Position(val x: Double, val y: Double)
 
 private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: ButtonB) {
-  fun searchOptimalSolution(): Int? {
+  fun searchOptimalSolution(): Double? {
 
     val origin = Point(0.0, 0.0)
-    val aPointVector = Point(buttonA.x.toDouble(), buttonA.y.toDouble())
+    val aPointVector = Point(buttonA.x, buttonA.y)
 
-    val target = Point(prize.x.toDouble(), prize.y.toDouble())
-    val bPointVector = Point(target.x + buttonB.x.toDouble(), target.y + buttonB.y.toDouble())
+    val target = Point(prize.x, prize.y)
+    val bPointVector = Point(target.x + buttonB.x, target.y + buttonB.y)
 
     val aLine = Line(origin, aPointVector)
     val bLine = Line(target, bPointVector)
 
-    val intersection = findIntersection(aLine, bLine)
+    val intersection = findDoubleersection(aLine, bLine)
 
     println("intersection: $intersection")
 
-    println(intersection.x.toInt() % buttonA.x)
-    println(intersection.y.toInt() % buttonA.y)
-    println((prize.x - intersection.x.toInt()) % buttonB.x)
-    println((prize.y - intersection.y.toInt()) % buttonB.y)
+    println(intersection.x % buttonA.x)
+    println(intersection.y % buttonA.y)
+    println((prize.x - intersection.x) % buttonB.x)
+    println((prize.y - intersection.y) % buttonB.y)
 
     if (
-      intersection.x.toInt() % buttonA.x == 0 &&
-      intersection.y.toInt() % buttonA.y == 0 &&
-      (prize.x - intersection.x.toInt()) % buttonB.x == 0 &&
-      (prize.y - intersection.y.toInt()) % buttonB.y == 0
+      intersection.x % buttonA.x == 0.0 &&
+      intersection.y % buttonA.y == 0.0 &&
+      (prize.x - intersection.x) % buttonB.x == 0.0 &&
+      (prize.y - intersection.y) % buttonB.y == 0.0
     ) {
-      val aPushes = intersection.x.toInt() / buttonA.x
-      val bPushes = (prize.x - intersection.x.toInt()) / buttonB.x
+      val aPushes = intersection.x / buttonA.x
+      val bPushes = (prize.x - intersection.x) / buttonB.x
 
-      val maxPushes = 100
-
-      if (aPushes > maxPushes || bPushes > maxPushes) {
-        println("more than $maxPushes per button needed to reach \n$this")
-        return null
-      }
       val tokens = (bPushes * buttonB.cost) + (aPushes * buttonA.cost)
 
       println("$bPushes bPushes and $aPushes aPushes needed for $tokens to reach \n$this")
@@ -137,7 +138,7 @@ data class Point(val x: Double, val y: Double) {
 
 data class Line(val A: Point, val B: Point)
 
-fun findIntersection(line: Line, other: Line): Point {
+fun findDoubleersection(line: Line, other: Line): Point {
   val a1 = line.B.y - line.A.y
   val b1 = line.A.x - line.B.x
   val c1 = a1 * line.A.x + b1 * line.A.y
