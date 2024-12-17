@@ -5,15 +5,15 @@ import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day01A = Day01A("input/input_01")
+  val day01A = Day01A("input/day01_input")
   val durationA = measureTimeMillis { println("Solution for Day01A: ${day01A.solve()}") }
   println("solution took $durationA milliseconds")
 
-  val day01BTest = Day01B("input/test_01")
+  val day01BTest = Day01B("input/day01_test")
   assert(day01BTest.solve() == 31L)
 
 
-  val day01B = Day01B("input/input_01")
+  val day01B = Day01B("input/day01_input")
   val durationB = measureTimeMillis { println("Solution for Day01B: ${day01B.solve()}") }
   println("solution took $durationB milliseconds")
 

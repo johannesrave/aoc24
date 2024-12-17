@@ -4,11 +4,11 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day05ATest = Day05A("input/test_05")
+  val day05ATest = Day05A("input/day05_test")
   val day05ATestResult = day05ATest.solve().also { println(it) }
   assert(day05ATestResult == 143)
 
-  val day05A = Day05A("input/input_05")
+  val day05A = Day05A("input/day05_input")
   val durationA = measureTimeMillis {
     val solution = day05A.solve()
     println("Solution for Day05A: $solution")
@@ -16,10 +16,10 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day05BTest = Day05B("input/test_05")
+  val day05BTest = Day05B("input/day05_test")
   val day05BTestResult = day05BTest.solve()
   assert(day05BTestResult == 123)
-  val day05B = Day05B("input/input_05")
+  val day05B = Day05B("input/day05_input")
   val duration05B = measureTimeMillis {
     val solution = day05B.solve()
     println("Solution for Day05B: $solution")

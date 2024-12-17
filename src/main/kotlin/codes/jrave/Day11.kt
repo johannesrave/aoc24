@@ -6,12 +6,12 @@ import java.math.BigInteger
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day11ATest = Day11A("input/test_11")
+  val day11ATest = Day11A("input/day11_test")
   val day11ATestResult = day11ATest.solve()
   println("Test result for Day11A: $day11ATestResult")
   assert(day11ATestResult == 55312.toBigInteger())
 
-  val day11A = Day11A("input/input_11")
+  val day11A = Day11A("input/day11_input")
   val durationA = measureTimeMillis {
     val solution = day11A.solve()
     println("Solution for Day11A: $solution")
@@ -19,12 +19,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day11BTest = Day11B("input/test_11")
+  val day11BTest = Day11B("input/day11_test")
   val day11BTestResult = day11BTest.solve()
   println("Test result for Day11B: $day11BTestResult")
   assert(day11BTestResult == 65601038650482.toBigInteger())
 
-  val day11B = Day11B("input/input_11")
+  val day11B = Day11B("input/day11_input")
   val duration11B = measureTimeMillis {
     val solution = day11B.solve()
     println("Solution for Day11B: $solution")
