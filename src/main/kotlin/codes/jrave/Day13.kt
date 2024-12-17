@@ -1,7 +1,6 @@
 package codes.jrave
 
 import java.io.File
-import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.BigInteger.ZERO
 import kotlin.system.measureTimeMillis
@@ -41,9 +40,8 @@ data class Day13A(
     val xyPattern = Regex("""X.(?<x>\d{2,6}).*Y.(?<y>\d{2,6})""")
     val games = parseGames(input, xyPattern)
 
-//    games.forEach(::println)
-
-    return games.mapNotNull { game -> game.searchOptimalSolution() }.sum()
+    return games
+      .mapNotNull { game -> game.searchOptimalSolution(maxPushes = 100.toBigInteger()) }.sum()
   }
 }
 
@@ -53,8 +51,8 @@ data class Day13B(
   fun solve(input: String = this.input): BigInteger {
     val xyPattern = Regex("""X.(?<x>\d{2,6}).*Y.(?<y>\d{2,6})""")
     val correction = 10000000000000.toBigInteger()
-    val games =
-      parseGames(input, xyPattern).map { game: Game ->
+    val games = parseGames(input, xyPattern)
+      .map { game: Game ->
         val prize = game.prize
         game.copy(prize = prize.copy(x = prize.x + correction, y = prize.y + correction))
       }
@@ -87,7 +85,14 @@ private data class ButtonB(override val x: BigInteger, override val y: BigIntege
 private data class Prize(val x: BigInteger, val y: BigInteger)
 
 private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: ButtonB) {
-  fun searchOptimalSolution(): BigInteger? {
+  fun searchOptimalSolution(maxPushes: BigInteger? = null): BigInteger? {
+    if (maxPushes != null &&
+      (prize.x > maxPushes * (buttonA.x + buttonB.x) || prize.y > maxPushes * (buttonA.y + buttonB.y))
+    ) {
+      println()
+      println("can't even reach \n$this")
+      return null
+    }
 
     val origin = Point(ZERO, ZERO)
     val aPointVector = Point(buttonA.x, buttonA.y)
@@ -101,11 +106,6 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
     val intersection = findDoubleersection(aLine, bLine)
 
     println("intersection: $intersection")
-
-    println(intersection.x % buttonA.x)
-    println(intersection.y % buttonA.y)
-    println((prize.x - intersection.x) % buttonB.x)
-    println((prize.y - intersection.y) % buttonB.y)
 
     if (
       intersection.x % buttonA.x == ZERO &&
@@ -128,8 +128,8 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
   }
 }
 
-
 // line intersection code taken from https://rosettacode.org/wiki/Find_the_intersection_of_two_lines#Kotlin
+// i think some of this stuff is redundant for my purposes but it does work :shrug:
 
 data class Point(val x: BigInteger, val y: BigInteger) {
   override fun toString() = "{$x, $y}"
