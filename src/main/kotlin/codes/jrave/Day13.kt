@@ -103,7 +103,7 @@ private data class Game(val prize: Prize, val buttonA: ButtonA, val buttonB: But
     val aLine = Line(origin, aPointVector)
     val bLine = Line(target, bPointVector)
 
-    val intersection = findDoubleersection(aLine, bLine)
+    val intersection = findIntersection(aLine, bLine)
 
     println("intersection: $intersection")
 
@@ -137,7 +137,7 @@ data class Point(val x: BigInteger, val y: BigInteger) {
 
 data class Line(val A: Point, val B: Point)
 
-fun findDoubleersection(line: Line, other: Line): Point {
+fun findIntersection(line: Line, other: Line): Point {
   val a1 = line.B.y - line.A.y
   val b1 = line.A.x - line.B.x
   val c1 = a1 * line.A.x + b1 * line.A.y
