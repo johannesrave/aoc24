@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 use std assert
 
-def main [ --day_number: string, --force (-f)] {
+def main [ --day_number: string (--day), --force (-f)] {
   let template_file = glob "src/**/templates/DayXX.kt" | first
   let target_file = $"src/main/kotlin/codes/jrave/Day($day_number).kt"
   let input_file = $"input/day($day_number)_input"
