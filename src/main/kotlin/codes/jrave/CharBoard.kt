@@ -58,6 +58,8 @@ fun Array<CharArray>.shrinkWrap(nullChar: Char? = NULL_CHAR): Array<CharArray> =
   .dropLastWhile { row -> row.all { it == nullChar } }
   .toTypedArray()
 
+fun Array<CharArray>.findFirstPosition(char: Char): Pos = findFirstPosition(setOf(char))
+
 fun Array<CharArray>.findFirstPosition(chars: Set<Char>): Pos {
   return mapIndexedNotNull { y, row ->
     if (chars.any { it in row }) {
@@ -66,6 +68,8 @@ fun Array<CharArray>.findFirstPosition(chars: Set<Char>): Pos {
     } else null
   }.first()
 }
+
+fun Array<CharArray>.findPositions(char: Char): Set<Pos> = findPositions(setOf(char))
 
 fun Array<CharArray>.findPositions(chars: Set<Char>): Set<Pos> =
   flatMapIndexed { y, row ->
@@ -113,7 +117,7 @@ enum class Direction(val x: Int, val y: Int, val c: Char) {
 
   companion object {
     val directionMarkers = entries.map { it.c }.toSet()
-    fun from(c: Char): Direction = entries.find { it.c == c }!!
+    fun from(c: Char): Direction? = entries.find { it.c == c }
   }
 }
 
