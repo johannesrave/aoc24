@@ -4,31 +4,24 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day14ATest = Day14A("input/day14_test")
-  val day14ATestResult = day14ATest.solve(rows = 7, columns = 11, seconds = 100)
-  println("Test result for Day14A: $day14ATestResult")
-  assert(day14ATestResult == 12)
-
-  val day14A = Day14A("input/day14_input")
-  val durationA = measureTimeMillis {
-    val solution = day14A.solve(rows = 103, columns = 101, seconds = 100)
-    println("Solution for Day14A: $solution")
-    assert(solution > 500)
-  }
-  println("Solution took $durationA milliseconds")
+//  val day14ATest = Day14A("input/day14_test")
+//  val day14ATestResult = day14ATest.solve(rows = 7, columns = 11, seconds = 100)
+//  println("Test result for Day14A: $day14ATestResult")
+//  assert(day14ATestResult == 12)
 //
-//  val day14BTest = Day14B("input/day14_test")
-//  val day14BTestResult = day14BTest.solve()
-//  println("Test result for Day14B: $day14BTestResult")
-//  assert(day14BTestResult == 1)
-//
-//  val day14B = Day14B("input/day14_input")
-//  val duration14B = measureTimeMillis {
-//    val solution = day14B.solve()
-//    println("Solution for Day14B: $solution")
-//    assert(solution == 1)
+//  val day14A = Day14A("input/day14_input")
+//  val durationA = measureTimeMillis {
+//    val solution = day14A.solve(rows = 103, columns = 101, seconds = 100)
+//    println("Solution for Day14A: $solution")
+//    assert(solution > 500)
 //  }
-//  println("Solution took $duration14B milliseconds")
+//  println("Solution took $durationA milliseconds")
+
+  val day14B = Day14B("input/day14_input")
+  val duration14B = measureTimeMillis {
+    day14B.solve(rows = 103, columns = 101, maxSeconds = 7132)
+  }
+  println("Solution took $duration14B milliseconds")
 }
 
 
@@ -43,7 +36,7 @@ data class Day14A(
 
     val quadrants = splitIntoQuadrants(rows, columns, positionsAfterMovement)
 
-    val board = emptyBoard(rows, columns, '.')
+    val board = emptyBoard(rows, columns, ' ')
     println(
       board
         .markPositions(positionsAfterMovement, 'X')
@@ -63,9 +56,32 @@ data class Day14A(
 data class Day14B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
+  fun solve(input: String = this.input, rows: Int, columns: Int, maxSeconds: Int): Int {
+    val robotRegex = Regex("""p=(\d+),(\d+) v=(-?\d+),(-?\d+)""")
+    val robotPosToVelocity = parseRobotPosToVelocity(input, robotRegex)
+
+    val initialPositions = robotPosToVelocity.map { (pos) -> pos }.toSet()
+    for (i in 0..maxSeconds) {
+      val positionsAfterMovement =
+        moveRobotsForSeconds(robotPosToVelocity, rows, columns, i).toSet()
+
+      val board = emptyBoard(rows, columns, ' ')
+
+//      if ((i - 62) % 101 == 0) {
+//        println("Board after $i seconds:")
+//        println(board.markPositions(positionsAfterMovement, 'X').toPrintString())
+//      }
+
+      if (initialPositions == positionsAfterMovement) println("repeated state after $i seconds");
+      if (i == 7132) {
+        println("Board after $i seconds:")
+        println(board.markPositions(positionsAfterMovement, 'X').toPrintString())
+      }
+    }
+
     return 0
   }
+
 }
 
 private fun parseRobotPosToVelocity(
