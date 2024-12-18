@@ -107,8 +107,11 @@ data class Pos(val y: Int, val x: Int) {
   operator fun minus(other: Pos): Pos = Pos(y - other.y, x - other.x)
 }
 
-enum class Direction(val x: Int, val y: Int, val c: Char) {
-  N(0, -1, '^'), E(1, 0, '>'), S(0, 1, 'v'), W(-1, 0, '<'), ;
+enum class Direction(val x: Int, val y: Int, val c: Char, val horizontal: Boolean, val vertical: Boolean) {
+  N(0, -1, '^', false, true),
+  E(1, 0, '>', true, false),
+  S(0, 1, 'v', false, true),
+  W(-1, 0, '<', true, false), ;
 
   fun turnClockwise() = turnBy(1)
   fun turnCounterClockwise() = turnBy(3)
