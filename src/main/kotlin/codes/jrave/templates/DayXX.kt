@@ -1,4 +1,4 @@
-package codes.jrave.templates
+package codes.jrave
 
 import java.io.File
 import kotlin.system.measureTimeMillis
