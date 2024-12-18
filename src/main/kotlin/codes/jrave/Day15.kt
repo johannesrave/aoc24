@@ -87,14 +87,12 @@ data class Day15B(
 
     println(board.toPrintString())
 
-    var robotPos = board.findFirstPosition('@')
+    val robotPos = board.findFirstPosition('@')
+    var robot = Robot(robotPos)
 
-    robotDirections.forEach { direction ->
-      val lookAheadPos = robotPos + direction
-      if (moveNeighbour(board, lookAheadPos, direction)) {
-        board[lookAheadPos] = '@'
-        board[robotPos] = '.'
-        robotPos = lookAheadPos
+    robotDirections.forEach { dir ->
+      if (robot.canMove(board, dir)) {
+        robot = robot.move(board, dir)
       }
       println(board.toPrintString())
     }
@@ -114,158 +112,88 @@ data class Day15B(
     }.toCharArray()
   }.toTypedArray()
 
-  private fun moveNeighbour(board: Array<CharArray>, pos: Pos, dir: Direction): Boolean {
-    if (pos !in board) return false
-    val char = board[pos]
-    if (char == '#') return false
-    if (char == '.') return true
+}
 
+data class Robot(val pos: Pos) {
+  fun canMove(board: Array<CharArray>, dir: Direction): Boolean {
+    if (board[pos + dir] == '#') return false
+    if (board[pos + dir] == '.') return false
+    val crates = getNeighbouringCrate(board, dir).getCratesInDirection(board, dir)
+    return crates.all { it.canMove(board, dir) }
+  }
 
-    val lookAheadPos = pos + dir
-    val lookAheadTwoPos = lookAheadPos + dir
-    val lookAheadPosR = lookAheadPos + E
-    val lookAheadPosL = lookAheadPos + W
+  private fun getNeighbouringCrate(
+    board: Array<CharArray>,
+    dir: Direction
+  ) = when {
+    (board[pos + dir] == '[') -> WideCrate(pos + dir, pos + dir + E)
+    (board[pos + dir] == ']') -> WideCrate(pos + dir + W, pos + dir)
+    else -> throw IllegalStateException("illegal character in board: ${board[pos + dir]} at position ${pos + dir}")
+  }
 
-    val (canMove, secondPos) = when {
-      dir.horizontal -> moveNeighbour(board, lookAheadTwoPos, dir) to lookAheadTwoPos
-      char == '[' -> tryMoveCrate(board, listOf(lookAheadPos, lookAheadPosR), dir) to lookAheadPosR
-      char == ']' -> tryMoveCrate(board, listOf(lookAheadPos, lookAheadPosL), dir) to lookAheadPosL
-
-      else -> throw IllegalStateException("illegal character in board: $char at position $pos")
-    }
-    when {
-      canMove && dir == E -> {
-        board[lookAheadPos] = char
-        board[lookAheadTwoPos] = ']'
-        return true
-      }
-
-      canMove && dir == W -> {
-        board[lookAheadPos] = char
-        board[lookAheadTwoPos] = '['
-        return true
-      }
-
-      canMove && dir.vertical -> {
-        board[lookAheadPos] = char
-        board[secondPos] = '.'
-        return true
-      }
-
-      else -> return false
-    }
+  fun move(board: Array<CharArray>, dir: Direction): Robot {
+    val crates = getNeighbouringCrate(board, dir).getCratesInDirection(board, dir)
+    crates.reversed().forEach { it.move(board, dir) }
+    board[pos] = '.'
+    board[pos + dir] = '@'
+    return Robot(pos + dir)
   }
 }
 
-private fun tryMoveCrate(
-  board: Array<CharArray>,
-  positions: List<Pos>,
-  dir: Direction
-): Boolean {
-  if (positions.any { it !in board }) return false;
+data class WideCrate(val left: Pos, val right: Pos) {
+  fun canMove(board: Array<CharArray>, dir: Direction): Boolean =
+    (board[left + dir] != '#' && board[right + dir] != '#')
 
-  when {
-    positions.any { board[it] == '#' } -> return false
-    positions.all { board[it] == '.' } -> return true
-  }
-  val posL = positions[0]
-  val posR = positions[1]
-
-  val charL = board[posL]
-  val charR = board[posR]
-
-  when {
-    charL == '[' && charR == ']' -> {
-      if (tryMoveCrate(board, listOf(posL + dir, posR + dir), dir)) {
-        board[posL + dir] = '['
-        board[posR + dir] = ']'
-        board[posL] = '.'
-        board[posR] = '.'
-        return true
-      } else
-        return false
+  fun move(board: Array<CharArray>, direction: Direction) = when (direction) {
+    W -> {
+      board[left + W] = '['; board[left] = ']'; board[right] = '.'
     }
 
-    else -> throw IllegalStateException("unclear situation in board at $posL and $posR. \n ${board.toPrintString()}")
+    E -> {
+      board[left] = '.'; board[right] = '['; board[right + E] = ']'
+    }
+
+    N -> {
+      board[left] = '.'; board[right] = '.'; board[left + N] = '['; board[right + N] = ']'
+    }
+
+    S -> {
+      board[left] = '.'; board[right] = '.'; board[left + N] = '['; board[right + S] = ']'
+    }
   }
 
+  fun getCratesInDirection(board: Array<CharArray>, dir: Direction): List<WideCrate> {
+
+    val crates = mutableListOf<WideCrate>()
+
+    if (dir == W && board[left + W] == ']')
+      crates += WideCrate(left + W + W, left + W)
+
+    if (dir == E && board[right + E] == '[')
+      crates += WideCrate(right + E, right + E + E)
+
+    if (dir.vertical && board[left + dir] == ']')
+      crates += WideCrate(left + dir + W, left + dir)
+
+    if (dir.vertical && board[right + dir] == '[')
+      crates += WideCrate(right + dir, right + dir + E)
+
+    if (dir.vertical && board[left + dir] == '[' && board[left + dir] == ']')
+      crates += listOf(
+        WideCrate(left + dir + W, left + dir),
+        WideCrate(right + dir, right + dir + E)
+      )
+
+    return crates + crates
+      .flatMap { it.getCratesInDirection(board, dir) }
+      .distinct()
+      .sortedBy {
+        when (dir) {
+          N -> -it.left.y
+          E -> -it.left.x
+          S -> it.left.y
+          W -> it.right.x
+        }
+      }
+  }
 }
-
-private fun tryMoveCrate(
-  board: Array<CharArray>,
-  crate: WideCrate,
-  dir: Direction
-): Boolean {
-  val lookAheadPosLeft = crate.left + dir
-  val lookAheadPosRight = crate.right + dir
-
-  val lookAheadLeft = board[lookAheadPosLeft]
-  val lookAheadRight = board[lookAheadPosRight]
-
-  if (lookAheadLeft == '#' || lookAheadRight == '#') return false
-
-  if (dir == W && board[crate.left + W] == '.') {
-    board[crate.left + W] = '['; board[crate.left] = ']'; board[crate.right] = '.'
-    return true
-  }
-  if (dir == E && board[crate.right + E] == '.') {
-    board[crate.left] = '.'; board[crate.right] = '['; board[crate.right + E] = ']'
-    return true
-  }
-  if (dir == W && board[crate.left + W] == ']' &&
-    tryMoveCrate(board, WideCrate(crate.left + W + W, crate.left + W), dir)
-  ) {
-    board[crate.left + W] = '['; board[crate.left] = ']'; board[crate.right] = '.'
-    return true
-  }
-  if (dir == E && lookAheadLeft == '[' &&
-    tryMoveCrate(board, WideCrate(crate.right + E, crate.right + E + E), dir)
-  ) {
-    board[crate.left] = '.'; board[crate.right] = '['; board[crate.right + E] = ']'
-    return true
-  }
-
-  if (dir.vertical && lookAheadLeft == '.' && lookAheadRight == '.') {
-    board[crate.left] = '.'; board[crate.right] = '.'
-    board[crate.left + dir] = '['; board[crate.right + dir] = ']'
-    return true
-  }
-
-  if (dir.vertical && lookAheadLeft == '[' && lookAheadRight == ']' &&
-    tryMoveCrate(board, WideCrate(crate.left + dir, crate.right + dir), dir)
-  ) {
-    board[crate.left] = '.'; board[crate.right] = '.'
-    board[crate.left + dir] = '['; board[crate.right + dir] = ']'
-    return true
-  }
-
-  if (dir.vertical && lookAheadLeft == ']' && lookAheadRight == '.' &&
-    tryMoveCrate(board, WideCrate(crate.left + dir + W, crate.left + dir), dir)
-  ) {
-    board[crate.left] = '.'; board[crate.right] = '.'
-    board[lookAheadPosLeft] = '['; board[lookAheadPosRight] = ']'
-    return true
-  }
-
-  if (dir.vertical && lookAheadLeft == '.' && lookAheadRight == '[' &&
-    tryMoveCrate(board, WideCrate(crate.right + dir, crate.right + dir + E), dir)
-  ) {
-    board[crate.left] = '.'; board[crate.right] = '.'
-    board[lookAheadPosLeft] = '['; board[lookAheadPosRight] = ']'
-    return true
-  }
-
-  if (dir.vertical && lookAheadLeft == ']' && lookAheadRight == '[' &&
-    tryMoveCrate(board, WideCrate(crate.left + dir + W, crate.left + dir), dir) &&
-    tryMoveCrate(board, WideCrate(crate.right + dir, crate.right + dir + E), dir)
-  ) {
-    TODO("this is wrong - one of the crates might move even though the other one can't. need a check-round before!")
-    board[crate.left] = '.'; board[crate.right] = '.'
-    board[lookAheadPosLeft] = '['; board[lookAheadPosRight] = ']'
-    return true
-  }
-
-  return false
-}
-
-data class WideCrate(val left: Pos, val right: Pos)
