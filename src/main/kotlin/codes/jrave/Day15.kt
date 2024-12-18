@@ -91,8 +91,9 @@ data class Day15B(
     var robot = Robot(robotPos)
 
     robotDirections.forEach { dir ->
-      if (robot.canMove(board, dir)) {
-        robot = robot.move(board, dir)
+      val (canMove, crates) = robot.canMove(board, dir)
+      if (canMove) {
+        robot = robot.moveAndPush(board, dir, crates)
       }
       println(board.toPrintString())
     }
@@ -111,29 +112,25 @@ data class Day15B(
       }
     }.toCharArray()
   }.toTypedArray()
-
 }
 
 data class Robot(val pos: Pos) {
-  fun canMove(board: Array<CharArray>, dir: Direction): Boolean {
-    if (board[pos + dir] == '#') return false
-    if (board[pos + dir] == '.') return false
-    val crates = getNeighbouringCrate(board, dir).getCratesInDirection(board, dir)
-    return crates.all { it.canMove(board, dir) }
+  fun canMove(board: Array<CharArray>, dir: Direction): Pair<Boolean, List<WideCrate>> {
+    if (board[pos + dir] == '#') return false to emptyList()
+    if (board[pos + dir] == '.') return true to emptyList()
+    val neighbouringCrate = getNeighbouringCrate(board, dir)
+    val crates = neighbouringCrate.getCratesInDirection(board, dir) + neighbouringCrate
+    return crates.all { it.canMove(board, dir) } to crates
   }
 
-  private fun getNeighbouringCrate(
-    board: Array<CharArray>,
-    dir: Direction
-  ) = when {
+  private fun getNeighbouringCrate(board: Array<CharArray>, dir: Direction): WideCrate = when {
     (board[pos + dir] == '[') -> WideCrate(pos + dir, pos + dir + E)
     (board[pos + dir] == ']') -> WideCrate(pos + dir + W, pos + dir)
-    else -> throw IllegalStateException("illegal character in board: ${board[pos + dir]} at position ${pos + dir}")
+    else -> throw IllegalStateException("illegal character in board: ${board[pos + dir]} at position ${pos + dir} when moving $dir")
   }
 
-  fun move(board: Array<CharArray>, dir: Direction): Robot {
-    val crates = getNeighbouringCrate(board, dir).getCratesInDirection(board, dir)
-    crates.reversed().forEach { it.move(board, dir) }
+  fun moveAndPush(board: Array<CharArray>, dir: Direction, crates: List<WideCrate>): Robot {
+    crates.distinct().forEach { it.move(board, dir) }
     board[pos] = '.'
     board[pos + dir] = '@'
     return Robot(pos + dir)
@@ -158,7 +155,7 @@ data class WideCrate(val left: Pos, val right: Pos) {
     }
 
     S -> {
-      board[left] = '.'; board[right] = '.'; board[left + N] = '['; board[right + S] = ']'
+      board[left] = '.'; board[right] = '.'; board[left + S] = '['; board[right + S] = ']'
     }
   }
 
@@ -178,22 +175,10 @@ data class WideCrate(val left: Pos, val right: Pos) {
     if (dir.vertical && board[right + dir] == '[')
       crates += WideCrate(right + dir, right + dir + E)
 
-    if (dir.vertical && board[left + dir] == '[' && board[left + dir] == ']')
-      crates += listOf(
-        WideCrate(left + dir + W, left + dir),
-        WideCrate(right + dir, right + dir + E)
-      )
+    if (dir.vertical && board[left + dir] == '[' && board[right + dir] == ']')
+      crates += WideCrate(left + dir, right + dir)
 
-    return crates + crates
-      .flatMap { it.getCratesInDirection(board, dir) }
-      .distinct()
-      .sortedBy {
-        when (dir) {
-          N -> -it.left.y
-          E -> -it.left.x
-          S -> it.left.y
-          W -> it.right.x
-        }
-      }
+    return (crates.flatMap { it.getCratesInDirection(board, dir) } + crates)
+
   }
 }
