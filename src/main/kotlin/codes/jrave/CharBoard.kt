@@ -78,9 +78,14 @@ fun Array<CharArray>.findPositions(chars: Set<Char>): Set<Pos> =
       .filterNotNull()
   }.toSet()
 
-operator fun Array<CharArray>.get(pos: Pos): Char = this[pos.y][pos.x]
+operator fun Array<IntArray>.get(pos: Pos): Int = this[pos.y][pos.x]
 operator fun Array<CharArray>.set(pos: Pos, char: Char) {
   this[pos.y][pos.x] = char
+}
+
+operator fun Array<CharArray>.get(pos: Pos): Char = this[pos.y][pos.x]
+operator fun Array<IntArray>.set(pos: Pos, int: Int) {
+  this[pos.y][pos.x] = int
 }
 
 infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
@@ -107,7 +112,13 @@ data class Pos(val y: Int, val x: Int) {
   operator fun minus(other: Pos): Pos = Pos(y - other.y, x - other.x)
 }
 
-enum class Direction(val x: Int, val y: Int, val c: Char, val horizontal: Boolean, val vertical: Boolean) {
+enum class Direction(
+  val x: Int,
+  val y: Int,
+  val c: Char,
+  val horizontal: Boolean,
+  val vertical: Boolean
+) {
   N(0, -1, '^', false, true),
   E(1, 0, '>', true, false),
   S(0, 1, 'v', false, true),
@@ -115,6 +126,7 @@ enum class Direction(val x: Int, val y: Int, val c: Char, val horizontal: Boolea
 
   fun turnClockwise() = turnBy(1)
   fun turnCounterClockwise() = turnBy(3)
+  fun flip(): Direction = turnBy(2)
 
   private fun turnBy(n: Int) = entries[(this.ordinal + n) % entries.size]
 
