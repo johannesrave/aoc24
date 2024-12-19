@@ -43,7 +43,7 @@ fun main() {
   val duration16B = measureTimeMillis {
     val solution = day16B.solve()
     println("Solution for Day16B: $solution")
-    assert(solution > 456)
+    assert(solution > 546)
   }
   println("Solution took $duration16B milliseconds")
 }
@@ -54,7 +54,7 @@ data class Day16A(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val paths = findPaths(board)
+    val paths = findShortestPaths(board)
 
     println("Path with lowest score:")
     paths.minBy { path -> scorePathByStepsAndTurns(path) }
@@ -71,7 +71,7 @@ data class Day16B(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val paths = findPaths(board)
+    val paths = findShortestPaths(board) + findShortestPaths(board, start = 'E', end = 'S')
 
     val scoresToPaths = paths.map { path -> scorePathByStepsAndTurns(path) to path }
     val winningScore = scoresToPaths.minOf { (score, path) -> score }
@@ -81,15 +81,15 @@ data class Day16B(
 
     board.markPositions(tilesOnWinningPaths).toPrintString().also { println(it) }
 
-    return tilesOnWinningPaths.size + 1 // for the end tile
+    return tilesOnWinningPaths.size // for the end tile
   }
 }
 
-private fun findPaths(
+private fun findShortestPaths(
   board: Array<CharArray>,
   wall: Char = '#',
   start: Char = 'S',
-  end: Char = 'E'
+  end: Char = 'E',
 ): MutableList<List<Step>> {
   val startPos = board.findFirstPosition(start)
 
@@ -103,12 +103,15 @@ private fun findPaths(
     for (dir in Direction.entries.filter { it != step.dir.flip() }) {
       val nextStep = Step(step.pos + dir, dir)
       when {
-        board[nextStep.pos] == end -> pathsFinished += path
+        board[nextStep.pos] == end -> {
+          minimalStepsBoard[nextStep.pos] = scorePathByStepsAndTurns(path + nextStep)
+          pathsFinished += path
+        }
         board[nextStep.pos] == wall -> continue
         path.any { it.pos == nextStep.pos } -> continue
-        scorePathByStepsAndTurns(path) - 1000 >= minimalStepsBoard[nextStep.pos] -> continue
+        scorePathByStepsAndTurns(path + nextStep) > minimalStepsBoard[nextStep.pos] -> continue
         else -> {
-          minimalStepsBoard[nextStep.pos] = scorePathByStepsAndTurns(path)
+          minimalStepsBoard[nextStep.pos] = scorePathByStepsAndTurns(path + nextStep)
           pathsQueue += (path + nextStep)
         }
       }
