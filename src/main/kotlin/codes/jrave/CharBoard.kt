@@ -88,6 +88,11 @@ operator fun Array<IntArray>.set(pos: Pos, int: Int) {
   this[pos.y][pos.x] = int
 }
 
+operator fun <T> Array<Array<T>>.get(pos: Pos) = this[pos.y][pos.x]
+operator fun <T> Array<Array<T>>.set(pos: Pos, value: T) {
+  this[pos.y][pos.x] = value
+}
+
 infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
   (pos.y in this.indices && pos.x in this.first().indices)
 
