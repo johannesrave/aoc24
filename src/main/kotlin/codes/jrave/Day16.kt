@@ -2,6 +2,7 @@ package codes.jrave
 
 import codes.jrave.Direction.E
 import java.io.File
+import java.util.PriorityQueue
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -54,7 +55,15 @@ data class Day16A(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val paths = findShortestPaths(board)
+    val pathsToBoard = findShortestPaths(board)
+
+    val (paths, markedBoard) = pathsToBoard
+
+    println("Found paths:")
+    paths.map { path -> path.size to scorePathByStepsAndTurns(path) }.onEach { println(it) }
+
+    markedBoard.forEach { row -> row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) } }
+
 
     println("Path with lowest score:")
     paths.minBy { path -> scorePathByStepsAndTurns(path) }
@@ -71,7 +80,13 @@ data class Day16B(
 ) {
   fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
-    val paths = findShortestPaths(board) + findShortestPaths(board, start = 'E', end = 'S')
+
+    val pathsToBoard = findShortestPaths(board)
+
+    val (paths, markedBaoard) = pathsToBoard
+
+    println("Found paths:")
+    paths.map { path -> path.size to scorePathByStepsAndTurns(path) }.onEach { println(it) }
 
     val scoresToPaths = paths.map { path -> scorePathByStepsAndTurns(path) to path }
     val winningScore = scoresToPaths.minOf { (score, path) -> score }
@@ -84,42 +99,49 @@ data class Day16B(
     return tilesOnWinningPaths.size // for the end tile
   }
 }
+typealias Path = List<Step>
 
 private fun findShortestPaths(
   board: Array<CharArray>,
   wall: Char = '#',
   start: Char = 'S',
   end: Char = 'E',
-): MutableList<List<Step>> {
+): Pair<MutableList<Path>, Array<IntArray>> {
   val startPos = board.findFirstPosition(start)
 
-  val pathsQueue = mutableListOf(listOf(Step(startPos, E)))
-  val pathsFinished = mutableListOf<List<Step>>()
-  val minimalStepsBoard = Array(board.size) { IntArray(board.first().size) { Int.MAX_VALUE } }
+  val pathsQueue = PriorityQueue { path1: Path, path2: Path ->
+    scorePathByStepsAndTurns(path1) - scorePathByStepsAndTurns(path2)
+  }
+
+  pathsQueue.add(listOf(Step(startPos, E)))
+//  val pathsQueue = mutableListOf(listOf(Step(startPos, E)))
+  val pathsFinished = mutableListOf<Path>()
+  val minimalStepsBoard = Array(board.size) { IntArray(board.first().size) { 999_999 } }
 
   while (pathsQueue.isNotEmpty()) {
-    val path = pathsQueue.removeFirst()
+    val path = pathsQueue.remove()
     val step = path.last()
     for (dir in Direction.entries.filter { it != step.dir.flip() }) {
       val nextStep = Step(step.pos + dir, dir)
       when {
         board[nextStep.pos] == end -> {
-          minimalStepsBoard[nextStep.pos] = scorePathByStepsAndTurns(path + nextStep)
+          minimalStepsBoard[nextStep.pos] = path.size + 1
           pathsFinished += path
         }
+
         board[nextStep.pos] == wall -> continue
-        path.any { it.pos == nextStep.pos } -> continue
-        scorePathByStepsAndTurns(path + nextStep) > minimalStepsBoard[nextStep.pos] -> continue
+//        path.any { it.pos == nextStep.pos } -> continue
+        path.size + 1 >= minimalStepsBoard[nextStep.pos] -> continue
         else -> {
-          minimalStepsBoard[nextStep.pos] = scorePathByStepsAndTurns(path + nextStep)
+          minimalStepsBoard[nextStep.pos] = path.size + 1
           pathsQueue += (path + nextStep)
         }
       }
     }
   }
-  return pathsFinished
+  return pathsFinished to minimalStepsBoard
 }
 
-private fun scorePathByStepsAndTurns(path: List<Step>) = path.indices.map { i ->
+private fun scorePathByStepsAndTurns(path: Path) = path.indices.map { i ->
   if (i != path.lastIndex && (path[i].dir != path[i + 1].dir)) 1001 else 1
 }.sum()
