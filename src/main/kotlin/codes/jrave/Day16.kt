@@ -24,15 +24,15 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day16BTest0 = Day16B("input/day16_test_0")
-  val day16BTest0Result = day16BTest0.solve()
-  println("Test result for Day16B: $day16BTest0Result")
-  assert(day16BTest0Result == 45)
-
-  val day16BTest1 = Day16B("input/day16_test_1")
-  val day16BTest1Result = day16BTest1.solve()
-  println("Test result for Day16B: $day16BTest1Result")
-  assert(day16BTest1Result == 64)
+//  val day16BTest0 = Day16B("input/day16_test_0")
+//  val day16BTest0Result = day16BTest0.solve()
+//  println("Test result for Day16B: $day16BTest0Result")
+//  assert(day16BTest0Result == 45)
+//
+//  val day16BTest1 = Day16B("input/day16_test_1")
+//  val day16BTest1Result = day16BTest1.solve()
+//  println("Test result for Day16B: $day16BTest1Result")
+//  assert(day16BTest1Result == 64)
 
 
 //  val day16BTest2 = Day16B("input/day16_test_2")
@@ -40,13 +40,13 @@ fun main() {
 //  println("Test result for Day16B: $day16BTest2Result")
 //  assert(day16BTest2Result == 64)
 
-  val day16B = Day16B("input/day16_input")
-  val duration16B = measureTimeMillis {
-    val solution = day16B.solve()
-    println("Solution for Day16B: $solution")
-    assert(solution > 546)
-  }
-  println("Solution took $duration16B milliseconds")
+//  val day16B = Day16B("input/day16_input")
+//  val duration16B = measureTimeMillis {
+//    val solution = day16B.solve()
+//    println("Solution for Day16B: $solution")
+//    assert(solution > 546)
+//  }
+//  println("Solution took $duration16B milliseconds")
 }
 
 
@@ -54,94 +54,81 @@ data class Day16A(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): Int {
-    val board = parseBoard(input)
-    val pathsToBoard = findShortestPaths(board)
+    val startMarker = 'S'
+    val endMarker = 'E'
 
-    val (paths, markedBoard) = pathsToBoard
-
-    println("Found paths:")
-    paths.map { path -> path.size to scorePathByStepsAndTurns(path) }.onEach { println(it) }
-
-    markedBoard.forEach { row -> row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) } }
-
-
-    println("Path with lowest score:")
-    paths.minBy { path -> scorePathByStepsAndTurns(path) }
-      .let { path -> board.markSteps(path) }
-      .toPrintString().also { println(it) }
-
-    return paths.minOf { path -> scorePathByStepsAndTurns(path) }
-  }
-
-}
-
-data class Day16B(
-  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
-) {
-  fun solve(input: String = this.input): Int {
     val board = parseBoard(input)
 
-    val pathsToBoard = findShortestPaths(board)
+    val startPos = board.findFirstPosition(startMarker)
+    val endPos = board.findFirstPosition(endMarker)
 
-    val (paths, markedBaoard) = pathsToBoard
+    val minBoard = findShortestPaths(board, startPos, endPos)
 
-    println("Found paths:")
-    paths.map { path -> path.size to scorePathByStepsAndTurns(path) }.onEach { println(it) }
+    minBoard.forEach { row ->
+      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
+    }
 
-    val scoresToPaths = paths.map { path -> scorePathByStepsAndTurns(path) to path }
-    val winningScore = scoresToPaths.minOf { (score, path) -> score }
-    val winningPaths = scoresToPaths.filter { (score, path) -> score == winningScore }
-
-    val tilesOnWinningPaths = winningPaths.flatMap { (score, path) -> path.map { it.pos } }.toSet()
-
-    board.markPositions(tilesOnWinningPaths).toPrintString().also { println(it) }
-
-    return tilesOnWinningPaths.size // for the end tile
+    return minBoard[endPos]
   }
 }
-typealias Path = List<Step>
+
+//data class Day16B(
+//  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
+//) {
+//  fun solve(input: String = this.input): Int {
+//    val board = parseBoard(input)
+//
+//    val pathsToBoard = findShortestPaths(board)
+//
+//    val (paths, markedBaoard) = pathsToBoard
+//
+//    println("Found paths:")
+//    paths.map { path -> path.size to scorePathByStepsAndTurns(path) }.onEach { println(it) }
+//
+//    val scoresToPaths = paths.map { path -> scorePathByStepsAndTurns(path) to path }
+//    val winningScore = scoresToPaths.minOf { (score, path) -> score }
+//    val winningPaths = scoresToPaths.filter { (score, path) -> score == winningScore }
+//
+//    val tilesOnWinningPaths = winningPaths.flatMap { (score, path) -> path.map { it.pos } }.toSet()
+//
+//    board.markPositions(tilesOnWinningPaths).toPrintString().also { println(it) }
+//
+//    return tilesOnWinningPaths.size // for the end tile
+//  }
+//}
 
 private fun findShortestPaths(
   board: Array<CharArray>,
+  startPos: Pos,
+  endPos: Pos,
   wall: Char = '#',
-  start: Char = 'S',
-  end: Char = 'E',
-): Pair<MutableList<Path>, Array<IntArray>> {
-  val startPos = board.findFirstPosition(start)
+): Array<IntArray> {
+  // this could be initialized to Int.MAX_VALUE instead,
+  // I'm just using six digits for more readable prints
+  val minimalCostBoard = Array(board.size) { IntArray(board.first().size) { 999_999 } }
+  minimalCostBoard[startPos] = 0
 
-  val pathsQueue = PriorityQueue { path1: Path, path2: Path ->
-    scorePathByStepsAndTurns(path1) - scorePathByStepsAndTurns(path2)
+  val stepsQueue = PriorityQueue { stepA: Step, stepB: Step ->
+    ((endPos.x - stepA.pos.x) + (endPos.y - stepA.pos.y))
+    -((endPos.x - stepB.pos.x) + (endPos.y - stepB.pos.y))
   }
 
-  pathsQueue.add(listOf(Step(startPos, E)))
-//  val pathsQueue = mutableListOf(listOf(Step(startPos, E)))
-  val pathsFinished = mutableListOf<Path>()
-  val minimalStepsBoard = Array(board.size) { IntArray(board.first().size) { 999_999 } }
-
-  while (pathsQueue.isNotEmpty()) {
-    val path = pathsQueue.remove()
-    val step = path.last()
-    for (dir in Direction.entries.filter { it != step.dir.flip() }) {
-      val nextStep = Step(step.pos + dir, dir)
+  stepsQueue.add(Step(startPos, E))
+  while (stepsQueue.isNotEmpty()) {
+    val lastStep = stepsQueue.remove()
+    for (dir in Direction.entries.filter { it != lastStep.dir.flip() }) {
+      val addedCost = if (dir == lastStep.dir) 1 else 1001
+      val cost = minimalCostBoard[lastStep.pos] + addedCost
+      val nextStep = Step(lastStep.pos + dir, dir)
       when {
-        board[nextStep.pos] == end -> {
-          minimalStepsBoard[nextStep.pos] = path.size + 1
-          pathsFinished += path
-        }
-
         board[nextStep.pos] == wall -> continue
-//        path.any { it.pos == nextStep.pos } -> continue
-        path.size + 1 >= minimalStepsBoard[nextStep.pos] -> continue
+        cost >= minimalCostBoard[nextStep.pos] -> continue
         else -> {
-          minimalStepsBoard[nextStep.pos] = path.size + 1
-          pathsQueue += (path + nextStep)
+          minimalCostBoard[nextStep.pos] = cost
+          if (nextStep.pos != endPos) stepsQueue += nextStep;
         }
       }
     }
   }
-  return pathsFinished to minimalStepsBoard
+  return minimalCostBoard
 }
-
-private fun scorePathByStepsAndTurns(path: Path) = path.indices.map { i ->
-  if (i != path.lastIndex && (path[i].dir != path[i + 1].dir)) 1001 else 1
-}.sum()
