@@ -1,5 +1,7 @@
 package codes.jrave
 
+import kotlin.math.abs
+
 val NULL_CHAR: Char = '\u0000'
 
 fun parseBoard(input: String): Array<CharArray> =
@@ -115,6 +117,7 @@ data class Pos(val y: Int, val x: Int) {
   operator fun plus(direction: Direction): Pos = Pos(y + direction.y, x + direction.x)
   operator fun plus(velocity: Velocity): Pos = Pos(y + velocity.y, x + velocity.x)
   operator fun minus(other: Pos): Pos = Pos(y - other.y, x - other.x)
+  fun manhattanDistance(otherPos: Pos) = (abs(x - otherPos.x) + abs(y - otherPos.y))
 }
 
 enum class Direction(

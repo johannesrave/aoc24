@@ -97,6 +97,7 @@ data class Day16A(
 //  }
 //}
 
+
 private fun findShortestPaths(
   board: Array<CharArray>,
   startPos: Pos,
@@ -109,8 +110,7 @@ private fun findShortestPaths(
   minimalCostBoard[startPos] = 0
 
   val stepsQueue = PriorityQueue { stepA: Step, stepB: Step ->
-    ((endPos.x - stepA.pos.x) + (endPos.y - stepA.pos.y))
-    -((endPos.x - stepB.pos.x) + (endPos.y - stepB.pos.y))
+    stepA.pos.manhattanDistance(endPos) - stepB.pos.manhattanDistance(endPos)
   }
 
   stepsQueue.add(Step(startPos, E))
