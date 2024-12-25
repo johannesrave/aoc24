@@ -80,6 +80,7 @@ data class Day16B(
     val endPos = board.findFirstPosition(endMarker)
 
     // startDir needs to point in a direction away from the minPath on the reverse search
+    // yea i know, this isn't a great way to switch from test to task - sue me
     val startDir = if (board.size > 100) N else E
 
 
