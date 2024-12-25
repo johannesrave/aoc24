@@ -1,8 +1,9 @@
 package codes.jrave
 
-import codes.jrave.Direction.E
+import codes.jrave.Direction.*
 import java.io.File
 import java.util.PriorityQueue
+import kotlin.math.min
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -34,17 +35,11 @@ fun main() {
   println("Test result for Day16B: $day16BTest1Result")
   assert(day16BTest1Result == 64)
 
-
-//  val day16BTest2 = Day16B("input/day16_test_2")
-//  val day16BTest2Result = day16BTest2.solve()
-//  println("Test result for Day16B: $day16BTest2Result")
-//  assert(day16BTest2Result == 64)
-
   val day16B = Day16B("input/day16_input")
   val duration16B = measureTimeMillis {
     val solution = day16B.solve()
     println("Solution for Day16B: $solution")
-    assert(solution > 594)
+    assert(solution == 575)
   }
   println("Solution took $duration16B milliseconds")
 }
@@ -62,11 +57,11 @@ data class Day16A(
     val startPos = board.findFirstPosition(startMarker)
     val endPos = board.findFirstPosition(endMarker)
 
-    val minBoard = shortestPaths(board, startPos, endPos)
+    val minBoard = shortestPaths(board, startPos, endPos, startDir = E)
 
-//    minBoard.forEach { row ->
-//      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
-//    }
+    minBoard.forEach { row ->
+      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
+    }
 
     return minBoard[endPos]
   }
@@ -84,13 +79,41 @@ data class Day16B(
     val startPos = board.findFirstPosition(startMarker)
     val endPos = board.findFirstPosition(endMarker)
 
-    val minBoard = shortestPaths(board, startPos, endPos)
+    // startDir needs to point in a direction away from the minPath on the reverse search
+    val startDir = if (board.size > 100) N else E
 
+
+    val minBoard = shortestPaths(board, startPos, endPos, startDir)
+    val overallMin = minBoard[endPos]
+
+    val minReverseBoard = shortestPaths(board, endPos, startPos, startDir)
+
+    val diffBoard = minBoard + minReverseBoard
+    val positionsOnOptimalPaths = mutableSetOf(startPos)
+
+    println()
+    diffBoard.forEachIndexed { y, row ->
+      row.forEachIndexed { x, value ->
+        if (value == overallMin || value == overallMin + 1000) {
+          positionsOnOptimalPaths.add(Pos(y, x))
+        }
+      }
+    }
+
+    println()
     minBoard.forEach { row ->
       row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
     }
 
-    val positionsOnOptimalPaths: Set<Pos> = positionsOnOptimalPaths(minBoard, startPos, endPos)
+    println()
+    minReverseBoard.forEach { row ->
+      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
+    }
+
+    println()
+    diffBoard.forEach { row ->
+      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
+    }
 
     board.markPositions(positionsOnOptimalPaths).toPrintString().also { println(it) }
 
@@ -103,18 +126,19 @@ private fun shortestPaths(
   board: Array<CharArray>,
   startPos: Pos,
   endPos: Pos,
+  startDir: Direction,
   wall: Char = '#'
 ): Array<IntArray> {
   // this could be initialized to Int.MAX_VALUE instead,
   // I'm just using six digits for more readable prints
-  val minimalCostBoard = Array(board.size) { IntArray(board.first().size) { 999_999 } }
+  val minimalCostBoard = Array(board.size) { IntArray(board.first().size) { 499_999 } }
   minimalCostBoard[startPos] = 0
 
   val stepsQueue = PriorityQueue { stepA: Step, stepB: Step ->
     stepA.pos.manhattanDistance(endPos) - stepB.pos.manhattanDistance(endPos)
   }
 
-  stepsQueue.add(Step(startPos, E))
+  stepsQueue.add(Step(startPos, startDir))
   while (stepsQueue.isNotEmpty()) {
     val lastStep = stepsQueue.remove()
     for (dir in Direction.entries.filter { it != lastStep.dir.flip() }) {
@@ -132,29 +156,4 @@ private fun shortestPaths(
     }
   }
   return minimalCostBoard
-}
-
-
-private fun positionsOnOptimalPaths(board: Array<IntArray>, startPos: Pos, endPos: Pos): Set<Pos> {
-  val positionsQueue = mutableListOf(endPos)
-  val positionsOnOptimalPaths = mutableSetOf(endPos)
-  val directions = Direction.entries
-
-  while (positionsQueue.isNotEmpty()) {
-    val pos = positionsQueue.removeFirst()
-//    val minimalNeighbouringCost = directions
-//      .minOf { dir -> board[pos + dir] }
-    val minimalNeighbours = directions
-      .filter { dir -> board[pos + dir] < board[endPos] }
-      .filter { dir ->
-        board[pos + dir] == board[pos] - 1
-            || board[pos + dir] == board[pos] + 999
-            || board[pos + dir] == board[pos] - 1001
-      }
-      .map { dir -> pos + dir }
-    positionsQueue.addAll(minimalNeighbours)
-    positionsOnOptimalPaths.addAll(minimalNeighbours)
-
-  }
-  return positionsOnOptimalPaths
 }

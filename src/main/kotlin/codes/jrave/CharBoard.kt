@@ -1,6 +1,7 @@
 package codes.jrave
 
 import kotlin.math.abs
+import kotlin.math.min
 
 val NULL_CHAR: Char = '\u0000'
 
@@ -79,6 +80,22 @@ fun Array<CharArray>.findPositions(chars: Set<Char>): Set<Pos> =
       .mapIndexed { x, c -> if (c in chars) Pos(y, x) else null }
       .filterNotNull()
   }.toSet()
+
+operator fun Array<IntArray>.plus(other: Array<IntArray>): Array<IntArray> {
+  if (this.size != other.size ||
+    this.any { it.size != this.first().size } ||
+    other.any { it.size != this.first().size }
+  ) {
+    throw IllegalArgumentException("Array size mismatch")
+  }
+
+  return indices.map { y ->
+    first().indices.map { x ->
+      this[Pos(y, x)] + other[Pos(y, x)]
+    }.toIntArray()
+  }.toTypedArray()
+}
+
 
 operator fun Array<IntArray>.get(pos: Pos): Int = this[pos.y][pos.x]
 operator fun Array<CharArray>.set(pos: Pos, char: Char) {
