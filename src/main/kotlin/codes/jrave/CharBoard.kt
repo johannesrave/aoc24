@@ -96,6 +96,11 @@ operator fun Array<IntArray>.plus(other: Array<IntArray>): Array<IntArray> {
   }.toTypedArray()
 }
 
+fun Array<IntArray>.printWithPadding(paddedDecimals: Int = 6): Unit = forEach { row ->
+  row.joinToString(" ") { it.toString().padStart(paddedDecimals) }
+    .also { println(it) }
+}
+
 
 operator fun Array<IntArray>.get(pos: Pos): Int = this[pos.y][pos.x]
 operator fun Array<CharArray>.set(pos: Pos, char: Char) {

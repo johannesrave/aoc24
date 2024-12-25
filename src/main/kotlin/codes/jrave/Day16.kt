@@ -101,19 +101,13 @@ data class Day16B(
     }
 
     println()
-    minBoard.forEach { row ->
-      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
-    }
+    minBoard.printWithPadding()
 
     println()
-    minReverseBoard.forEach { row ->
-      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
-    }
+    minReverseBoard.printWithPadding()
 
     println()
-    diffBoard.forEach { row ->
-      row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
-    }
+    diffBoard.printWithPadding()
 
     board.markPositions(positionsOnOptimalPaths).toPrintString().also { println(it) }
 
