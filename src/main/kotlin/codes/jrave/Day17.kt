@@ -5,18 +5,18 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-//  val day17ATest = Day17A("input/day17_test")
-//  val day17ATestResult = day17ATest.solve()
-//  println("Test result for Day17A: $day17ATestResult")
-//  assert(day17ATestResult == "4,6,3,5,6,3,5,2,1,0")
-//
-//  val day17A = Day17A("input/day17_input")
-//  val durationA = measureTimeMillis {
-//    val solution = day17A.solve()
-//    println("Solution for Day17A: $solution")
-//    assert(solution == "7,4,2,5,1,4,6,0,4")
-//  }
-//  println("Solution took $durationA milliseconds")
+  val day17ATest = Day17A("input/day17_test")
+  val day17ATestResult = day17ATest.solve()
+  println("Test result for Day17A: $day17ATestResult")
+  assert(day17ATestResult == "4,6,3,5,6,3,5,2,1,0")
+
+  val day17A = Day17A("input/day17_input")
+  val durationA = measureTimeMillis {
+    val solution = day17A.solve()
+    println("Solution for Day17A: $solution")
+    assert(solution == "7,4,2,5,1,4,6,0,4")
+  }
+  println("Solution took $durationA milliseconds")
 
 //  val day17BTest = Day17B("input/day17_test_1")
 //  val day17BTestResult = day17BTest.solve()
@@ -134,38 +134,28 @@ data class Day17B(
     val instructions = Regex("""Program: (\S*)""").find(input)!!.groupValues[1].split(',')
       .chunked(2) { (opcode, operand) -> Instruction(opcode.toInt(), operand.toInt()) }
 
-    // 10604411317
-    // 156723146685
-    // 287384104893
-    // 6063747005
-    // 18814431165
-    // 29954502589
-//    var aInitial = 287384104893L
-//    var aInitial = 89681391549L
-//    var aInitial = 109948268477L
+    // this yields the first sequence with 8 matches, i use it as baseline
     var aInitial = 23948989L
     val bInitial = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toLong()
     val cInitial = Regex("""Register C: (\d+)""").find(input)!!.groupValues[1].toLong()
 
 
     while (true) {
-      aInitial += 1 shl 27
+      // first found the solution with `1 shl 26`, as that was the difference between many numbers
+      // yielding 8 or more matches.
+      // afterwards manually tested to find the highest shiftCount to return the solution: 29
+      aInitial += 1 shl 29
 
       var a = aInitial
       var b = bInitial
       var c = cInitial
 
-//      val output = mutableListOf<Int>()
       var matchingIndex = -1
-
-//      println(Regex("""Program: (\S*)""").find(input)!!.groupValues[1])
 
       var instructionCounter = 0
       var virtualInstructionIndex = 0
 
       while (virtualInstructionIndex <= instructions.lastIndex) {
-//        println("Registers: $a, $b, $c, $output")
-//        println(instructions[(i shr 1)])
 
         val (opcode, operand) = instructions[virtualInstructionIndex]
 
@@ -208,20 +198,20 @@ data class Day17B(
 
             if (nextValue != programValues[matchingIndex]) break;
 
-//            if (matchingIndex >= 8) println("$aInitial:   ${programValues.slice(0..matchingIndex)}")
+            if (matchingIndex >= 9) println("$aInitial:   ${programValues.slice(0..matchingIndex)}")
 
             if (matchingIndex == programValues.lastIndex) return aInitial;
           }
         }
         virtualInstructionIndex = instructionCounter shr 1
       }
-//      return aInitial;
     }
   }
 }
 
-fun dv(a: Long, combo: Long): Long = a shr (combo).toInt()
+fun dv(a: Long, combo: Long): Long = a shr combo.toInt()
 
-val memoizedDv = ::dv
+// memoization is in this case actually slower than doing the highly efficient bitwise calculations
+val memoizedDv = ::dv.memoize()
 
 data class Instruction(val opcode: Int, val operand: Int)
