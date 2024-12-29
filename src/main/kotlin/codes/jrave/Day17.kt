@@ -1,5 +1,6 @@
 package codes.jrave
 
+import arrow.core.memoize
 import java.io.File
 import kotlin.math.pow
 import kotlin.system.measureTimeMillis
@@ -14,22 +15,22 @@ fun main() {
   val durationA = measureTimeMillis {
     val solution = day17A.solve()
     println("Solution for Day17A: $solution")
-    assert(solution == "")
+    assert(solution == "7,4,2,5,1,4,6,0,4")
   }
   println("Solution took $durationA milliseconds")
 
-//  val day17BTest = Day17B("input/day17_test")
+//  val day17BTest = Day17B("input/day17_test_1")
 //  val day17BTestResult = day17BTest.solve()
 //  println("Test result for Day17B: $day17BTestResult")
-//  assert(day17BTestResult == "")
-//
-//  val day17B = Day17B("input/day17_input")
-//  val duration17B = measureTimeMillis {
-//    val solution = day17B.solve()
-//    println("Solution for Day17B: $solution")
-//    assert(solution == "")
-//  }
-//  println("Solution took $duration17B milliseconds")
+//  assert(day17BTestResult == 117440)
+
+  val day17B = Day17B("input/day17_input")
+  val duration17B = measureTimeMillis {
+    val solution = day17B.solve()
+    println("Solution for Day17B: $solution")
+    assert(solution == 0)
+  }
+  println("Solution took $duration17B milliseconds")
 }
 
 
@@ -58,55 +59,70 @@ data class Day17A(
 data class Day17B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): String {
+  fun solve(input: String = this.input): Int {
 
     val programString = Regex("""Program: (\S*)""").find(input)!!.groupValues[1]
     val instructions = programString.split(',')
       .chunked(2) { (a, b) -> Instruction(a.toInt(), b.toInt()) }
 
-    val a = Regex("""Register A: (\d+)""").find(input)!!.groupValues[1].toInt()
     val b = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toInt()
     val c = Regex("""Register C: (\d+)""").find(input)!!.groupValues[1].toInt()
 
-    var state = ProgramState(a, b, c, 0, mutableListOf())
+    var aOverride = 999999999
 
-    while (state.i / 2 <= instructions.lastIndex) {
-      state = state.process(instructions[state.i / 2])
+    while (true) {
+      aOverride++
+
+      var state = ProgramState(aOverride, b, c, 0, mutableListOf())
+        println(instructions)
+
+      while (state.i / 2 <= instructions.lastIndex) {
+//        println(state)
+//        println(instructions[state.i / 2])
+        state = state.process(instructions[state.i / 2])
+      }
+
+      val outputString = state.output.joinToString(",")
+      println(outputString)
+      if (outputString == programString) return aOverride;
     }
-
-    return state.output.joinToString(",")
   }
 }
 
 data class Instruction(val opcode: Int, val operand: Int)
 
 data class ProgramState(val a: Int, val b: Int, val c: Int, val i: Int, val output: List<Int>) {
+
+  val memoizedProcess = ::process.memoize()
+
   fun process(inst: Instruction): ProgramState {
     val (opcode, operand) = inst
     return when (opcode) {
-      0 -> copy(a = (this.a / 2.0.pow(comboOperand(operand))).toInt(), i = i + 2)
+      // adv
+      0 -> copy(a = (a / 2.0.pow(comboOperand(operand))).toInt(), i = i + 2)
 
+      // bxl
       1 -> copy(b = (b xor operand), i = i + 2)
 
+      // bst
       2 -> copy(b = (comboOperand(operand) % 8), i = i + 2)
 
-      3 -> if (a == 0) {
-        copy(i = i + 2)
-      } else {
-        copy(i = operand)
-      }
+      // jnz
+      3 -> copy(i = if (a == 0) i + 2 else operand)
 
+      // bxc
       4 -> copy(b = (b xor c), i = i + 2)
 
-      5 -> copy(output = output + comboOperand(operand) % 8, i = i + 2)
+      // out
+      5 -> copy(output = output + comboOperand(operand) % 8, i = i + 2) // out
 
+      // bdv
       6 -> copy(b = (this.a / 2.0.pow(comboOperand(operand))).toInt(), i = i + 2)
 
+      // cdv
       7 -> copy(c = (this.a / 2.0.pow(comboOperand(operand))).toInt(), i = i + 2)
 
-      else -> {
-        throw IllegalArgumentException("Invalid opcode: $inst")
-      }
+      else -> throw IllegalArgumentException("Invalid opcode: $inst")
     }
   }
 
