@@ -23,13 +23,13 @@ fun main() {
   val day17BTest = Day17B("input/day17_test_1")
   val day17BTestResult = day17BTest.solve()
   println("Test result for Day17B: $day17BTestResult")
-  assert(day17BTestResult == 117440)
+  assert(day17BTestResult == 117440L)
 
   val day17B = Day17B("input/day17_input")
   val duration17B = measureTimeMillis {
     val solution = day17B.solve()
     println("Solution for Day17B: $solution")
-    assert(solution == 0)
+    assert(solution > 162360291261L)
   }
   println("Solution took $duration17B milliseconds")
 }
@@ -71,19 +71,19 @@ data class Day17A(
       when (opcode) {
         // adv
         0 -> {
-          a = a / (1 shl (combo))
+          a = a shr (combo)
           i += 2
         }
 
         // bdv
         6 -> {
-          b = a / (1 shl (combo))
+          b = a shr (combo)
           i += 2
         }
 
         // cdv
         7 -> {
-          c = a / (1 shl (combo))
+          c = a shr (combo)
           i += 2
         }
 
@@ -128,7 +128,7 @@ data class Day17A(
 data class Day17B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
+  fun solve(input: String = this.input): Long {
 
     val programString = Regex("""Program: (\S*)""").find(input)!!.groupValues[1]
     val programValues = programString.split(',').map { it.toInt() }.toTypedArray()
@@ -136,14 +136,15 @@ data class Day17B(
     val instructions = Regex("""Program: (\S*)""").find(input)!!.groupValues[1].split(',')
       .chunked(2) { (opcode, operand) -> Instruction(opcode.toInt(), operand.toInt()) }
 
-    var aInitial = 0
-    val bInitial = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toInt()
-    val cInitial = Regex("""Register C: (\d+)""").find(input)!!.groupValues[1].toInt()
+    // 10604411317
+    // 156723146685
+    var aInitial = 0L
+    val bInitial = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toLong()
+    val cInitial = Regex("""Register C: (\d+)""").find(input)!!.groupValues[1].toLong()
 
 
     while (true) {
       aInitial++
-      println(aInitial)
 
       var a = aInitial
       var b = bInitial
@@ -162,7 +163,7 @@ data class Day17B(
         val (opcode, operand) = instructions[(i shr 1)]
 
         val combo = when {
-          operand <= 3 -> operand
+          operand <= 3 -> operand.toLong()
           operand == 4 -> a
           operand == 5 -> b
           operand == 6 -> c
@@ -172,25 +173,25 @@ data class Day17B(
         when (opcode) {
           // adv
           0 -> {
-            a = a / (1 shl (combo))
+            a = a shr (combo).toInt()
             i += 2
           }
 
           // bdv
           6 -> {
-            b = a / (1 shl (combo))
+            b = a shr (combo).toInt()
             i += 2
           }
 
           // cdv
           7 -> {
-            c = a / (1 shl (combo))
+            c = a shr (combo).toInt()
             i += 2
           }
 
           // bxl
           1 -> {
-            b = (b xor operand)
+            b = (b xor operand.toLong())
             i += 2
           }
 
@@ -202,7 +203,7 @@ data class Day17B(
 
           // jnz
           3 -> {
-            if (a == 0)
+            if (a == 0L)
               i += 2;
             else
               i = operand;
@@ -216,12 +217,12 @@ data class Day17B(
 
           // out
           5 -> {
-            val nextValue = combo and 0b111
+            val nextValue = (combo and 0b111).toInt()
             if (nextValue != programValues[output.size]) {
               break
             }
             output.addLast(nextValue)
-            println(output)
+            if (output.size >= 8) println("$aInitial:     $output");
             i += 2
           }
         }
