@@ -128,10 +128,13 @@ data class Day17B(
 ) {
   fun solve(input: String = this.input): Long {
 
-    val programString = Regex("""Program: (\S*)""").find(input)!!.groupValues[1]
-    val programValues = programString.split(',').map { it.toLong() }.toTypedArray()
+    val instructionMatches = Regex("""Program: (\S*)""").find(input)!!.groupValues[1]
 
-    val instructions = Regex("""Program: (\S*)""").find(input)!!.groupValues[1].split(',')
+    // we need an array of the input integers to be able to efficiently check whether our
+    // intermediate results match their counterparts by index during the search.
+    val instructionArray = instructionMatches.split(',').map { it.toLong() }.toTypedArray()
+
+    val instructions = instructionArray.toList()
       .chunked(2) { (opcode, operand) -> Instruction(opcode.toInt(), operand.toInt()) }
 
     // this yields the first sequence with 8 matches, i use it as baseline
@@ -150,7 +153,10 @@ data class Day17B(
       var b = bInitial
       var c = cInitial
 
-      var matchingIndex = -1
+      // instead of creating and appending to lots of lists, we can just test whether all
+      // intermediate results match the ones from the input. this is also why we use an array for
+      // instructionArray, to speed up checking its entries by index.
+      var matchingInstructionIndex = -1
 
       var instructionCounter = 0
       var virtualInstructionIndex = 0
@@ -193,14 +199,14 @@ data class Day17B(
 
           // out
           5 -> {
-            matchingIndex++
+            matchingInstructionIndex++
             val nextValue = combo and 0b111
 
-            if (nextValue != programValues[matchingIndex]) break;
+            if (nextValue != instructionArray[matchingInstructionIndex]) break;
 
-            if (matchingIndex >= 9) println("$aInitial:   ${programValues.slice(0..matchingIndex)}")
+            if (matchingInstructionIndex >= 9) println("$aInitial:   ${instructionArray.slice(0..matchingInstructionIndex)}")
 
-            if (matchingIndex == programValues.lastIndex) return aInitial;
+            if (matchingInstructionIndex == instructionArray.lastIndex) return aInitial;
           }
         }
         virtualInstructionIndex = instructionCounter shr 1
