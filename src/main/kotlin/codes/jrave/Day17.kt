@@ -40,7 +40,7 @@ data class Day17A(
   fun solve(input: String = this.input): String {
 
     val instructions = Regex("""Program: (\S*)""").find(input)!!.groupValues[1].split(',')
-      .chunked(2) { (a, b) -> Instruction(a.toInt(), b.toInt()) }
+      .chunked(2) { (opcode, operand) -> Instruction(opcode.toInt(), operand.toInt()) }
 
     val a = Regex("""Register A: (\d+)""").find(input)!!.groupValues[1].toInt()
     val b = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toInt()
