@@ -1,5 +1,6 @@
 package codes.jrave
 
+import arrow.core.memoize
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -26,7 +27,7 @@ fun main() {
   val duration17B = measureTimeMillis {
     val solution = day17B.solve()
     println("Solution for Day17B: $solution")
-    assert(solution > 162360291261L)
+    assert(solution == 164278764924605L)
   }
   println("Solution took $duration17B milliseconds")
 }
@@ -140,13 +141,15 @@ data class Day17B(
     // 18814431165
     // 29954502589
 //    var aInitial = 287384104893L
-    var aInitial = 29954502589L
+//    var aInitial = 89681391549L
+//    var aInitial = 109948268477L
+    var aInitial = 23948989L
     val bInitial = Regex("""Register B: (\d+)""").find(input)!!.groupValues[1].toLong()
     val cInitial = Regex("""Register C: (\d+)""").find(input)!!.groupValues[1].toLong()
 
 
     while (true) {
-      aInitial++
+      aInitial += 1 shl 27
 
       var a = aInitial
       var b = bInitial
@@ -178,13 +181,13 @@ data class Day17B(
 
         when (opcode) {
           // adv
-          0 -> a = memoizedDv(a, combo)
+          0 -> a = dv(a, combo)
 
           // bdv
-          6 -> b = memoizedDv(a, combo)
+          6 -> b = dv(a, combo)
 
           // cdv
-          7 -> c = memoizedDv(a, combo)
+          7 -> c = dv(a, combo)
 
           // bxl
           1 -> b = b xor operand.toLong()
@@ -205,7 +208,7 @@ data class Day17B(
 
             if (nextValue != programValues[matchingIndex]) break;
 
-            if (matchingIndex >= 8) println("$aInitial:   ${programValues.slice(0..matchingIndex)}")
+//            if (matchingIndex >= 8) println("$aInitial:   ${programValues.slice(0..matchingIndex)}")
 
             if (matchingIndex == programValues.lastIndex) return aInitial;
           }
