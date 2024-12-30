@@ -75,32 +75,34 @@ data class Day19B(
     println(towels)
     println(patterns)
 
+    val patternsToPossibilities = patterns.associateWith { pattern -> canBeCreatedWithTowelsInNWays(pattern, towels) }
+
     return patterns.sumOf { pattern -> canBeCreatedWithTowelsInNWays(pattern, towels) }
   }
 
   private fun canBeCreatedWithTowelsInNWays(pattern: String, towels: List<String>): Int {
-    val relevantTowels = towels.filter { towel -> pattern.contains(towel) }
+    val relevantTowels = towels.filter { towel -> towel in pattern }
 
-    val queue = PriorityQueue<String> { subPatternA, subPatternB ->
-      subPatternA.length - subPatternB.length
+    val matches = pattern.indices.map { 0 }.toIntArray()
+
+    for (towel in relevantTowels) {
+      if (pattern.startsWith(towel)) {
+        matches[towel.lastIndex] += 1
+      }
     }
 
-    queue.add(pattern)
-    var counter = 0
-
-    while (queue.isNotEmpty()) {
-      val subPattern = queue.remove()
-//      if (relevantTowels.any { towel -> subPattern == towel }) counter++;
+    for (i in pattern.indices) {
+      if(matches[i] < 1) continue;
       for (towel in relevantTowels) {
-        if (subPattern.startsWith(towel)) {
-          val newSubPattern = subPattern.substring(towel.length)
-          if (newSubPattern == "") {
-            counter++
-          } else queue.add(newSubPattern)
+        if (pattern.regionMatches(i+1, towel, 0, towel.length)) {
+          val offset = i + towel.length
+          if (offset in pattern.indices) {
+            matches[offset] += matches[i]
+          }
         }
       }
-
     }
-    return counter
+
+    return matches[pattern.lastIndex]
   }
 }
