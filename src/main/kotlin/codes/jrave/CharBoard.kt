@@ -1,7 +1,7 @@
 package codes.jrave
 
+import java.util.PriorityQueue
 import kotlin.math.abs
-import kotlin.math.min
 
 val NULL_CHAR: Char = '\u0000'
 
@@ -133,6 +133,40 @@ fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): A
   steps.forEach { step -> board_[step.pos] = overrideChar ?: step.dir.c }
   board_[steps.first().pos] = 'X'
   return board_
+}
+
+// something dijkstra this way comes
+fun Array<CharArray>.minimalDistanceBoard(
+  startPos: Pos,
+  endPos: Pos,
+  wall: Char = '#'
+): Array<IntArray> {
+  val minimalDistanceBoard = Array(size) { IntArray(first().size) { Int.MAX_VALUE } }
+  minimalDistanceBoard[startPos] = 0
+
+  val queue = PriorityQueue { posA: Pos, posB: Pos ->
+    posA.manhattanDistance(endPos) - posB.manhattanDistance(endPos)
+  }
+
+  queue.add(startPos)
+
+  while (queue.isNotEmpty()) {
+    val lastPos = queue.remove()
+    val cost = minimalDistanceBoard[lastPos] + 1
+    for (dir in Direction.entries) {
+      val lookAheadPos = lastPos + dir
+      when {
+        lookAheadPos !in this -> continue
+        this[lookAheadPos] == wall -> continue
+        cost >= minimalDistanceBoard[lookAheadPos] -> continue
+        else -> {
+          minimalDistanceBoard[lookAheadPos] = cost
+          if (lookAheadPos != endPos) queue += lookAheadPos;
+        }
+      }
+    }
+  }
+  return minimalDistanceBoard
 }
 
 data class Pos(val y: Int, val x: Int) {

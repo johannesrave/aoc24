@@ -47,7 +47,7 @@ data class Day18A(
     val startPos = Pos(0, 0)
     val endPos = Pos(boardDimension - 1, boardDimension - 1)
 
-    val minBoard = shortestPaths(board.markPositions(corruptions, char = '#'), startPos, endPos)
+    val minBoard = minimalDistanceBoard(board.markPositions(corruptions, char = '#'), startPos, endPos)
     return minBoard[endPos]
   }
 }
@@ -71,7 +71,7 @@ data class Day18B(
     val endPos = Pos(boardDimension - 1, boardDimension - 1)
 
     var minBoard =
-      shortestPaths(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
+      minimalDistanceBoard(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
 
     var nextCorruption = droppingCorruptions[0] // just to avoid typing as nullable
 
@@ -79,7 +79,7 @@ data class Day18B(
       nextCorruption = droppingCorruptions.removeFirst()
       board = board.markPositions(listOf(nextCorruption), char = '#')
       minBoard =
-        shortestPaths(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
+        minimalDistanceBoard(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
     }
 
     return "${nextCorruption.x},${nextCorruption.y}"
@@ -87,7 +87,7 @@ data class Day18B(
 }
 
 
-private fun shortestPaths(
+private fun minimalDistanceBoard(
   board: Array<CharArray>,
   startPos: Pos,
   endPos: Pos,

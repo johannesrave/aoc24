@@ -3,7 +3,6 @@ package codes.jrave
 import codes.jrave.Direction.*
 import java.io.File
 import java.util.PriorityQueue
-import kotlin.math.min
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -57,7 +56,7 @@ data class Day16A(
     val startPos = board.findFirstPosition(startMarker)
     val endPos = board.findFirstPosition(endMarker)
 
-    val minBoard = shortestPaths(board, startPos, endPos, startDir = E)
+    val minBoard = minimalDistanceBoard(board, startPos, endPos, startDir = E)
 
     minBoard.forEach { row ->
       row.joinToString(" ") { it.toString().padStart(6) }.also { println(it) }
@@ -84,10 +83,10 @@ data class Day16B(
     val startDir = if (board.size > 100) N else E
 
 
-    val minBoard = shortestPaths(board, startPos, endPos, startDir)
+    val minBoard = minimalDistanceBoard(board, startPos, endPos, startDir)
     val overallMin = minBoard[endPos]
 
-    val minReverseBoard = shortestPaths(board, endPos, startPos, startDir)
+    val minReverseBoard = minimalDistanceBoard(board, endPos, startPos, startDir)
 
     val diffBoard = minBoard + minReverseBoard
     val positionsOnOptimalPaths = mutableSetOf(startPos)
@@ -117,7 +116,7 @@ data class Day16B(
 
 }
 
-private fun shortestPaths(
+private fun minimalDistanceBoard(
   board: Array<CharArray>,
   startPos: Pos,
   endPos: Pos,
