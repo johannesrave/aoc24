@@ -14,14 +14,14 @@ fun main() {
   val durationA = measureTimeMillis {
     val solution = day19A.solve()
     println("Solution for Day19A: $solution")
-    assert(solution == 1)
+    assert(solution == 315)
   }
   println("Solution took $durationA milliseconds")
 
   val day19BTest = Day19B("input/day19_test")
   val day19BTestResult = day19BTest.solve()
   println("Test result for Day19B: $day19BTestResult")
-  assert(day19BTestResult == 1)
+  assert(day19BTestResult == 16)
 
   val day19B = Day19B("input/day19_input")
   val duration19B = measureTimeMillis {
@@ -68,6 +68,39 @@ data class Day19B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): Int {
-    return 0
+
+    val towels = input.split("\n\n").first().split(", ").distinct()
+    val patterns = input.split("\n\n").last().split("\n")
+
+    println(towels)
+    println(patterns)
+
+    return patterns.sumOf { pattern -> canBeCreatedWithTowelsInNWays(pattern, towels) }
+  }
+
+  private fun canBeCreatedWithTowelsInNWays(pattern: String, towels: List<String>): Int {
+    val relevantTowels = towels.filter { towel -> pattern.contains(towel) }
+
+    val queue = PriorityQueue<String> { subPatternA, subPatternB ->
+      subPatternA.length - subPatternB.length
+    }
+
+    queue.add(pattern)
+    var counter = 0
+
+    while (queue.isNotEmpty()) {
+      val subPattern = queue.remove()
+//      if (relevantTowels.any { towel -> subPattern == towel }) counter++;
+      for (towel in relevantTowels) {
+        if (subPattern.startsWith(towel)) {
+          val newSubPattern = subPattern.substring(towel.length)
+          if (newSubPattern == "") {
+            counter++
+          } else queue.add(newSubPattern)
+        }
+      }
+
+    }
+    return counter
   }
 }
