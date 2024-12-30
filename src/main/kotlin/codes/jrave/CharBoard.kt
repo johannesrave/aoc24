@@ -157,6 +157,7 @@ enum class Direction(
   fun turnClockwise() = turnBy(1)
   fun turnCounterClockwise() = turnBy(3)
   fun flip(): Direction = turnBy(2)
+  fun allExceptBackwards(): List<Direction> = listOf(turnClockwise(), this, turnCounterClockwise())
 
   private fun turnBy(n: Int) = entries[(this.ordinal + n) % entries.size]
 

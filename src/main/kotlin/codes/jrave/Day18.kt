@@ -1,13 +1,14 @@
 package codes.jrave
 
 import java.io.File
+import java.util.PriorityQueue
 import kotlin.system.measureTimeMillis
 
 fun main() {
   val day18ATest = Day18A("input/day18_test")
   val day18ATestResult = day18ATest.solve(boardDimension = 7, bytesDropped = 12)
   println("Test result for Day18A: $day18ATestResult")
-  assert(day18ATestResult == 1)
+  assert(day18ATestResult == 22)
 
   val day18A = Day18A("input/day18_input")
   val durationA = measureTimeMillis {
@@ -42,8 +43,13 @@ data class Day18A(
       .map { (x, y) -> Pos(y.toInt(), x.toInt()) }
 
 
-    board.markPositions(corruptions).toPrintString().also { println(it) }
-    return 0
+    board.markPositions(corruptions, char = '#').toPrintString().also { println(it) }
+
+    val startPos = Pos(0, 0)
+    val endPos = Pos(boardDimension - 1, boardDimension - 1)
+
+    val minBoard = shortestPaths(board.markPositions(corruptions, char = '#'), startPos, endPos)
+    return minBoard[endPos]
   }
 }
 
@@ -53,4 +59,40 @@ data class Day18B(
   fun solve(input: String = this.input): Int {
     return 0
   }
+}
+
+
+private fun shortestPaths(
+  board: Array<CharArray>,
+  startPos: Pos,
+  endPos: Pos,
+  wall: Char = '#'
+): Array<IntArray> {
+  // this could be initialized to Int.MAX_VALUE instead,
+  // I'm just using six digits for more readable prints
+  val minimalCostBoard = Array(board.size) { IntArray(board.first().size) { 999_999 } }
+  minimalCostBoard[startPos] = 0
+
+  val queue = PriorityQueue { posA: Pos, posB: Pos ->
+    posA.manhattanDistance(endPos) - posB.manhattanDistance(endPos)
+  }
+
+  queue.add(startPos)
+  while (queue.isNotEmpty()) {
+    val lastPos = queue.remove()
+    val cost = minimalCostBoard[lastPos] + 1
+    for (dir in Direction.entries) {
+      val lookAheadPos = lastPos + dir
+      when {
+        lookAheadPos !in board -> continue
+        board[lookAheadPos] == wall -> continue
+        cost > minimalCostBoard[lookAheadPos] -> continue
+        else -> {
+          minimalCostBoard[lookAheadPos] = cost
+          if (lookAheadPos != endPos) queue += lookAheadPos;
+        }
+      }
+    }
+  }
+  return minimalCostBoard
 }
