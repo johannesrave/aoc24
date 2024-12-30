@@ -19,15 +19,15 @@ fun main() {
   println("Solution took $durationA milliseconds")
 
   val day18BTest = Day18B("input/day18_test")
-  val day18BTestResult = day18BTest.solve()
+  val day18BTestResult = day18BTest.solve(boardDimension = 7, bytesDropped = 12)
   println("Test result for Day18B: $day18BTestResult")
-  assert(day18BTestResult == 1)
+  assert(day18BTestResult == "6,1")
 
   val day18B = Day18B("input/day18_input")
   val duration18B = measureTimeMillis {
-    val solution = day18B.solve()
+    val solution = day18B.solve(boardDimension = 71, bytesDropped = 1024)
     println("Solution for Day18B: $solution")
-    assert(solution == 1)
+    assert(solution == "31,22")
   }
   println("Solution took $duration18B milliseconds")
 }
@@ -42,7 +42,6 @@ data class Day18A(
       .map { line -> line.split(",") }
       .map { (x, y) -> Pos(y.toInt(), x.toInt()) }
 
-
     board.markPositions(corruptions, char = '#').toPrintString().also { println(it) }
 
     val startPos = Pos(0, 0)
@@ -56,8 +55,34 @@ data class Day18A(
 data class Day18B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
-    return 0
+  fun solve(input: String = this.input, boardDimension: Int, bytesDropped: Int): String {
+    var board = emptyBoard(boardDimension, '.')
+    val corruptions = input.lines()
+      .map { line -> line.split(",") }
+      .map { (x, y) -> Pos(y.toInt(), x.toInt()) }
+
+    val initialCorruptions = corruptions.take(bytesDropped)
+    val droppingCorruptions = corruptions.drop(bytesDropped).toMutableList()
+
+    board.markPositions(initialCorruptions, char = '#').toPrintString()
+      .also { println(it) }
+
+    val startPos = Pos(0, 0)
+    val endPos = Pos(boardDimension - 1, boardDimension - 1)
+
+    var minBoard =
+      shortestPaths(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
+
+    var nextCorruption = droppingCorruptions[0] // just to avoid typing as nullable
+
+    while (minBoard[endPos] != 999_999) {
+      nextCorruption = droppingCorruptions.removeFirst()
+      board = board.markPositions(listOf(nextCorruption), char = '#')
+      minBoard =
+        shortestPaths(board.markPositions(initialCorruptions, char = '#'), startPos, endPos)
+    }
+
+    return "${nextCorruption.x},${nextCorruption.y}"
   }
 }
 
