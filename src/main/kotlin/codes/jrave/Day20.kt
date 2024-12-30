@@ -60,8 +60,6 @@ data class Day20A(
       .filter { pos -> (board[pos + E] != '#' && board[pos + W] != '#') }
       .map { pos -> abs(minBoard[pos + E] - minBoard[pos + W]) - 2 }
 
-    val defaultDistance = minBoard[endPos]
-
     return (verticalBreakThroughs + horizontalBreakThroughs).filter { it >= 100 }.size
   }
 }
