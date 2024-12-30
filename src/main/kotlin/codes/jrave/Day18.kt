@@ -14,7 +14,7 @@ fun main() {
   val durationA = measureTimeMillis {
     val solution = day18A.solve(boardDimension = 71, bytesDropped = 1024)
     println("Solution for Day18A: $solution")
-    assert(solution == 1)
+    assert(solution == 294)
   }
   println("Solution took $durationA milliseconds")
 
@@ -86,7 +86,7 @@ private fun shortestPaths(
       when {
         lookAheadPos !in board -> continue
         board[lookAheadPos] == wall -> continue
-        cost > minimalCostBoard[lookAheadPos] -> continue
+        cost >= minimalCostBoard[lookAheadPos] -> continue
         else -> {
           minimalCostBoard[lookAheadPos] = cost
           if (lookAheadPos != endPos) queue += lookAheadPos;
