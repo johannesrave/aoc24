@@ -32,7 +32,7 @@ fun main() {
   println("Solution took $duration17B milliseconds")
 }
 
-
+// part A was relatively trivial, part B was more involved and has more comments.
 data class Day17A(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
@@ -123,6 +123,26 @@ data class Day17A(
   }
 }
 
+// i stumbled on the solution a bit, and only rationized it after.
+// after having gone overboard with optimizations such as memoization, bitwise operations and
+// comparison by index of the required output to the intermediate results - and STILL getting
+// minute-long runtimes without results - i realized that searching all candidates into the dozens
+// of billions probably wasn't the point of the task.
+// at some point, i printed all initializations of A that yield at least 8 matching entries to the
+// required output. ignoring some noise, they were often 134217728 or 67108864 apart, or
+// in other words 2^26 and 2^27, with all numbers inbetween not being very successful. so while
+// i didn't understand the pattern at this point (and still don't quite do), it was clear that
+// there WAS a pattern in regard to the differences between more successful As.
+// i then took the first A that had more than 8 matches (23948989) as a starting point and
+// incremented it by 2^27 for each trial, which quickly yielded the solution. this can be
+// "optimized" up until 2^29, after which the solution is passed by and another (wrong) A is found
+// that also yields the sequence.
+// my rationalization of why stepping by some power of 2 makes sense, is that A is every only
+// modified by powers of 2 during the algorithm. the "offset" from zero is a run that already gets
+// some of the sequence right (like having lockpicked half the cylinder), and then the trick becomes
+// finding the multiples of powers of 2 that "configure" the initial state correctly to
+// produce the rest of the sequence.
+
 data class Day17B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
@@ -159,13 +179,13 @@ data class Day17B(
       var matchingInstructionIndex = -1
 
       var instructionCounter = 0
-      var virtualInstructionIndex = 0
 
-      while (virtualInstructionIndex <= instructions.lastIndex) {
+      while (instructionCounter <= instructions.lastIndex) {
 
-        val (opcode, operand) = instructions[virtualInstructionIndex]
+        val (opcode, operand) = instructions[instructionCounter]
 
-        instructionCounter += 2
+        instructionCounter++
+
 
         val combo = when {
           operand <= 3 -> operand.toLong()
@@ -189,10 +209,14 @@ data class Day17B(
           1 -> b = b xor operand.toLong()
 
           // bst
-          2 -> b = combo and 0b111
+          2 -> b = combo and 0b111 // keep only the lowest 3 bits == modulo 8
 
           // jnz
-          3 -> if (a != 0L) instructionCounter = operand
+          3 -> if (a != 0L) instructionCounter = operand shr 1
+          // `shr 1` halves the operand/instructionCounter to account for half-size of the
+          // instructions-list when compared to the original AoC task. in the original, the indices
+          // are for all comma separated values, so opcodes and operands. we use Instruction
+          // objects containing both in one entry so only use half as many indices.
 
           // bxc
           4 -> b = b xor c
@@ -209,12 +233,25 @@ data class Day17B(
             if (matchingInstructionIndex == instructionArray.lastIndex) return aInitial;
           }
         }
-        virtualInstructionIndex = instructionCounter shr 1
       }
     }
   }
 }
 
+// the original task states:
+// """
+// The denominator is found by raising 2 to the power of the instruction's combo operand.
+// (So, an operand of 2 would divide A by 4 (2^2); an operand of 5 would divide A by 2^B.)
+// The result of the division operation is truncated to an integer
+// and then written to the A register.
+// """
+// this would give us
+// `a / 2.0.pow(combo(operand)))`
+// but we can use these shortcuts instead:
+// raising 2 to some integer N can be achieved by leftshifting 1 by N instead,
+// which is equivalent to N doublings of 1 and could be used to find the denominator.
+// however since the division by 2 to the power of N is the same as then HALVING the
+// operand N times, this can itself be achieved by RIGHTshifting the operand by N instead.
 fun dv(a: Long, combo: Long): Long = a shr combo.toInt()
 
 // memoization is in this case actually slower than doing the highly efficient bitwise calculations
