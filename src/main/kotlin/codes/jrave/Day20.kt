@@ -9,13 +9,13 @@ fun main() {
   val day20ATest = Day20A("input/day20_test")
   val day20ATestResult = day20ATest.solve()
   println("Test result for Day20A: $day20ATestResult")
-  assert(day20ATestResult == 1)
+  assert(day20ATestResult == 0) // could be parametrized to look for the 5 cheats saving 20 or more
 
   val day20A = Day20A("input/day20_input")
   val durationA = measureTimeMillis {
     val solution = day20A.solve()
     println("Solution for Day20A: $solution")
-    assert(solution == 1)
+    assert(solution == 1422)
   }
   println("Solution took $durationA milliseconds")
 
