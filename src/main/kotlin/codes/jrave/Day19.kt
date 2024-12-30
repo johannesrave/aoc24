@@ -21,13 +21,13 @@ fun main() {
   val day19BTest = Day19B("input/day19_test")
   val day19BTestResult = day19BTest.solve()
   println("Test result for Day19B: $day19BTestResult")
-  assert(day19BTestResult == 16)
+  assert(day19BTestResult == 16L)
 
   val day19B = Day19B("input/day19_input")
   val duration19B = measureTimeMillis {
     val solution = day19B.solve()
     println("Solution for Day19B: $solution")
-    assert(solution == 1)
+    assert(solution == 625108891232249L)
   }
   println("Solution took $duration19B milliseconds")
 }
@@ -67,7 +67,7 @@ data class Day19A(
 data class Day19B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
+  fun solve(input: String = this.input): Long {
 
     val towels = input.split("\n\n").first().split(", ").distinct()
     val patterns = input.split("\n\n").last().split("\n")
@@ -75,19 +75,17 @@ data class Day19B(
     println(towels)
     println(patterns)
 
-    val patternsToPossibilities = patterns.associateWith { pattern -> canBeCreatedWithTowelsInNWays(pattern, towels) }
-
     return patterns.sumOf { pattern -> canBeCreatedWithTowelsInNWays(pattern, towels) }
   }
 
-  private fun canBeCreatedWithTowelsInNWays(pattern: String, towels: List<String>): Int {
+  private fun canBeCreatedWithTowelsInNWays(pattern: String, towels: List<String>): Long {
     val relevantTowels = towels.filter { towel -> towel in pattern }
 
-    val matches = pattern.indices.map { 0 }.toIntArray()
+    val matches = pattern.indices.map { 0L }.toTypedArray()
 
     for (towel in relevantTowels) {
       if (pattern.startsWith(towel)) {
-        matches[towel.lastIndex] += 1
+        matches[towel.lastIndex] += 1L
       }
     }
 
