@@ -79,28 +79,20 @@ data class Day20B(
     val positionsOnPath = (board.findPositions('.') + startPos + endPos)
 
     val directConnections = positionsOnPath.flatMap { pos ->
-      // for each position on the path, roughly filter the other positions where:
-      // - the difference between them on the minBoard clears the threshold
+      // for each position on the path, filter from all other positions where:
       // - the other pos is reachable in 20 tiles by manhattan distance
+      // - the difference between them on the minBoard (minus the direct distance) clears the threshold
       positionsOnPath
-        .filter { otherPos -> minBoard[otherPos] - minBoard[pos] >= savedStepsThreshold }
-        .filter { otherPos -> pos.manhattanDistance(otherPos) <= 20 }
-        .map { otherPos ->
-          PosToTarget(
-            pos,
-            otherPos,
-            minBoard[otherPos] - minBoard[pos],
-            pos.manhattanDistance(otherPos)
-          )
+        .filter { otherPos ->
+          val differenceOnDefaultPath = minBoard[otherPos] - minBoard[pos]
+          val directDistance = pos.manhattanDistance(otherPos)
+
+          val actualDistanceSaved = differenceOnDefaultPath - directDistance
+
+          (directDistance <= 20 && actualDistanceSaved >= savedStepsThreshold)
         }
-        // afterwards fine-filter the positions where the actual savings after deducting the
-        // steps needed for the direct connection are still over the threshold.
-        // (this is just done to improve readbility for myself, it would be more efficient to do it in one go)
-        .filter { (pos, otherPos, difference, distance) -> difference - distance >= savedStepsThreshold }
     }
 
     return directConnections.size
   }
-
-  data class PosToTarget(val from: Pos, val to: Pos, val difference: Int, val distance: Int)
 }
