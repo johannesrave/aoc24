@@ -1,5 +1,6 @@
 package codes.jrave
 
+import codes.jrave.Direction.*
 import java.util.PriorityQueue
 import kotlin.math.abs
 
@@ -122,6 +123,14 @@ infix operator fun Array<out CharArray>.contains(pos: Pos): Boolean =
 
 
 fun Array<CharArray>.deepClone(): Array<CharArray> = Array(size) { get(it).clone() }
+
+fun Array<CharArray>.directNeighbours(pos: Pos): Set<Pos> = listOf(
+  pos + N, pos + E, pos + S, pos + W,
+).filter { it in this }.toSet()
+
+fun Array<CharArray>.allNeighbours(pos: Pos): Set<Pos> = listOf(
+  pos + N + W, pos + N, pos + N + E, pos + E, pos + S + E, pos + S, pos + S + W, pos + W,
+).filter { it in this }.toSet()
 
 
 fun Array<CharArray>.markPositions(positions: Collection<Pos>, char: Char = 'O'): Array<CharArray> =
