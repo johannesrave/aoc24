@@ -39,26 +39,17 @@ data class Day21A(
   fun solve(input: String = this.input): Int {
     val solutionsPerLine = input.split("\n").map { numericalCodeString ->
       val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }
-//      val firstVectors = (listOf(NumericPadKey.A) + numericalKeys).getVectorsOnNumericPad()
-//      val firstExpansion = firstVectors.expand()
-//
-//      val secondVectors = (listOf(A) + firstExpansion).getVectorsOnDirectionalPad()
-//      val secondExpansion = secondVectors.expand()
-//
-//      val thirdVectors = (listOf(A) + secondExpansion).getVectorsOnDirectionalPad()
-//      val thirdExpansion = thirdVectors.expand()
 
       val firstExpansion = (listOf(NumericPadKey.A) + numericalKeys).expand()
-
       val secondExpansion = (listOf(A) + firstExpansion).expand()
-
       val thirdExpansion = (listOf(A) + secondExpansion).expand()
 
+      println(numericalCodeString)
       println(firstExpansion.joinToString(separator = ""))
       println(secondExpansion.joinToString(separator = ""))
       println(thirdExpansion.joinToString(separator = ""))
 
-      println("" + numericalCodeString.dropLast(1).toInt() + " * " + thirdExpansion.size)
+//      println("" + numericalCodeString.dropLast(1).toInt() + " * " + thirdExpansion.size)
 
       numericalCodeString.dropLast(1).toInt() * thirdExpansion.size
     }
@@ -74,41 +65,6 @@ data class Day21B(
   }
 }
 
-//private fun List<DirectionalPadKey>.getVectorsOnDirectionalPad(): List<Pos> =
-//  windowed(2) { (a, b) -> b.pos - a.pos }
-//
-//private fun List<NumericPadKey>.getVectorsOnNumericPad(): List<Pos> =
-//  windowed(2) { (a, b) -> b.pos - a.pos }
-
-//private fun List<Pos>.expand(): List<DirectionalPadKey> = flatMap { vec ->
-//  val horizontalDirection = when {
-//    vec.x > 0 -> RIGHT
-//    else -> LEFT
-//  }
-//
-//  val verticalDirection = when {
-//    vec.y > 0 -> DOWN
-//    else -> UP
-//  }
-//
-//  val horizontalMoves = List(abs(vec.x)) { horizontalDirection }
-//  val verticalMoves = List(abs(vec.y)) { verticalDirection }
-//
-//  when {
-//    horizontalDirection == LEFT -> {
-//      (verticalMoves + horizontalMoves + A).toMutableList().also {
-//        // swap LEFT away from A if
-//        if (it.size > 2 && it[lastIndex - 1] == LEFT) {
-//          it[lastIndex - 1] = it[lastIndex - 2]
-//          it[lastIndex - 2] = LEFT
-//        }
-//      }
-//    }
-//
-//    else -> horizontalMoves + verticalMoves + A
-//  }
-//}
-
 private fun List<Key>.expand(): List<DirectionalPadKey> {
   val gapPos = Pos(0, -2)
 
@@ -116,22 +72,29 @@ private fun List<Key>.expand(): List<DirectionalPadKey> {
     .map { (from, to) ->
       val vector = to.pos - from.pos
 
-      val horizontalDirection = if (vector.x > 0) RIGHT else LEFT
-      val verticalDirection = if (vector.y > 0) DOWN else UP
+      val horizontalDist = abs(vector.x)
+      val verticalDist = abs(vector.y)
 
-      val horizontalMoves = List(abs(vector.x)) { horizontalDirection }
-      val verticalMoves = List(abs(vector.y)) { verticalDirection }
+      val horizontalMove = if (vector.x > 0) RIGHT else LEFT
+      val verticalMove = if (vector.y > 0) DOWN else UP
 
-      val couldHitGap = from.pos.y == gapPos.y && (from.pos.x + vector.x == gapPos.x)
+      val couldHitGap = from.pos.y == gapPos.y && to.pos.x == gapPos.x
 
       if (couldHitGap) {
-//        verticalMoves.take(1) + horizontalMoves + verticalMoves.drop(1) + A
-        verticalMoves + horizontalMoves + A
+        when (vector) {
+          Pos(-2, -2) -> listOf(UP, UP, LEFT, LEFT, A)
+          Pos(-2, -1) -> listOf(UP, UP, LEFT, A)
+          Pos(-1, -2) -> listOf(UP, LEFT, LEFT, A)
+          Pos(-1, -1) -> listOf(UP, LEFT, A)
+          Pos(1, -1) -> listOf(DOWN, LEFT, A)
+          Pos(1, -2) -> listOf(DOWN, LEFT, LEFT, A)
+          else -> throw IllegalArgumentException("Unexpected vector coordinate: $vector")
+        }
+        (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
+//        (horizontalMove * (horizontalDist-1)) + (verticalMove * (verticalDist-1)) + horizontalMove + verticalMove + A
       } else {
-        horizontalMoves + verticalMoves + A
+        (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
       }
-
-
     }.flatten()
 }
 
@@ -148,25 +111,35 @@ fun <T> weave(listA: List<T>, listB: List<T>): List<T> {
   return list
 }
 
-interface Key {
-  val pos: Pos
-}
+interface Key { val pos: Pos }
 
-enum class NumericPadKey(override val pos: Pos, val c: Char) : Key {
+enum class NumericPadKey(val c: Char) : Key {
   //@formatter:off
-  SEVEN(  Pos(-3, -2), '7'),
-  EIGHT(  Pos(-3, -1), '8'),
-  NINE(   Pos(-3,  0), '9'),
-  FOUR(   Pos(-2, -2), '4'),
-  FIVE(   Pos(-2, -1), '5'),
-  SIX(    Pos(-2,  0), '6'),
-  ONE(    Pos(-1, -2), '1'),
-  TWO(    Pos(-1, -1), '2'),
-  THREE(  Pos(-1,  0), '3'),
-  ZERO(   Pos( 0, -1), '0'),
-  A(      Pos( 0,  0), 'A'),
+  SEVEN('7'),
+  EIGHT('8'),
+  NINE( '9'),
+  FOUR( '4'),
+  FIVE( '5'),
+  SIX(  '6'),
+  ONE(  '1'),
+  TWO(  '2'),
+  THREE('3'),
+  ZERO( '0'),
+  A(    'A'),
   ;
   //@formatter:on
+
+    val keyPad = parseBoard(
+    """
+    789
+    456
+    123
+     0A
+    """.trimIndent()
+  )
+
+  private val origin = keyPad.findFirstPosition('A')
+  override val pos = keyPad.findFirstPosition(c) - origin
 
   override fun toString(): String = c.toString()
 
@@ -188,28 +161,33 @@ enum class NumericPadKey(override val pos: Pos, val c: Char) : Key {
   }
 }
 
-enum class DirectionalPadKey(override val pos: Pos, val c: Char) : Key {
-  UP(Pos(0, -1), '^'),
-  A(Pos(0, 0), 'A'),
-  LEFT(Pos(1, -2), '<'),
-  DOWN(Pos(1, -1), 'v'),
-  RIGHT(Pos(1, 0), '>'),
+enum class DirectionalPadKey(val c: Char) : Key {
+  //@formatter:off
+  UP(   '^'),
+  A(    'A'),
+  LEFT( '<'),
+  DOWN( 'v'),
+  RIGHT('>'),
+  //@formatter:on
   ;
 
-  val dirPad = parseBoard(
+  val keyPad = parseBoard(
     """
      ^A
     <v>
     """.trimIndent()
   )
 
-  val parsedPos = dirPad.findFirstPosition(c)
+  private val origin = keyPad.findFirstPosition('A')
+  override val pos = keyPad.findFirstPosition(c) - origin
 
   init {
-    println(parsedPos)
+    println("$c: $pos")
   }
 
   override fun toString(): String = c.toString()
+
+  operator fun times(n: Int) = List(n) { this }
 
   companion object {
     fun from(c: Char): DirectionalPadKey = when (c) {
