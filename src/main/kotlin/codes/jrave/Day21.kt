@@ -16,6 +16,7 @@ fun main() {
     val solution = day21A.solve()
     println("Solution for Day21A: $solution")
     assert(solution < 170862)
+    assert(solution > 166706)
   }
   println("Solution took $durationA milliseconds")
 
@@ -49,7 +50,7 @@ data class Day21A(
       println(secondExpansion.joinToString(separator = ""))
       println(thirdExpansion.joinToString(separator = ""))
 
-//      println("" + numericalCodeString.dropLast(1).toInt() + " * " + thirdExpansion.size)
+      println("" + numericalCodeString.dropLast(1).toInt() + " * " + thirdExpansion.size)
 
       numericalCodeString.dropLast(1).toInt() * thirdExpansion.size
     }
@@ -66,8 +67,6 @@ data class Day21B(
 }
 
 private fun List<Key>.expand(): List<DirectionalPadKey> {
-  val gapPos = Pos(0, -2)
-
   return windowed(2)
     .map { (from, to) ->
       val vector = to.pos - from.pos
@@ -78,20 +77,15 @@ private fun List<Key>.expand(): List<DirectionalPadKey> {
       val horizontalMove = if (vector.x > 0) RIGHT else LEFT
       val verticalMove = if (vector.y > 0) DOWN else UP
 
-      val couldHitGap = from.pos.y == gapPos.y && to.pos.x == gapPos.x
+      val couldHitGapGoingRIGHT = from.pos.x == GAP.pos.x && to.pos.y == GAP.pos.y
+      val couldHitGapGoingLeft = from.pos.y == GAP.pos.y && to.pos.x == GAP.pos.x
 
-      if (couldHitGap) {
-        when (vector) {
-          Pos(-2, -2) -> listOf(UP, UP, LEFT, LEFT, A)
-          Pos(-2, -1) -> listOf(UP, UP, LEFT, A)
-          Pos(-1, -2) -> listOf(UP, LEFT, LEFT, A)
-          Pos(-1, -1) -> listOf(UP, LEFT, A)
-          Pos(1, -1) -> listOf(DOWN, LEFT, A)
-          Pos(1, -2) -> listOf(DOWN, LEFT, LEFT, A)
-          else -> throw IllegalArgumentException("Unexpected vector coordinate: $vector")
-        }
+      if (couldHitGapGoingLeft) {
         (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
-//        (horizontalMove * (horizontalDist-1)) + (verticalMove * (verticalDist-1)) + horizontalMove + verticalMove + A
+      } else if (couldHitGapGoingRIGHT) {
+        (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+      } else if (horizontalMove == RIGHT && verticalMove == DOWN) {
+        (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
       } else {
         (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
       }
@@ -111,7 +105,9 @@ fun <T> weave(listA: List<T>, listB: List<T>): List<T> {
   return list
 }
 
-interface Key { val pos: Pos }
+interface Key {
+  val pos: Pos
+}
 
 enum class NumericPadKey(val c: Char) : Key {
   //@formatter:off
@@ -126,10 +122,11 @@ enum class NumericPadKey(val c: Char) : Key {
   THREE('3'),
   ZERO( '0'),
   A(    'A'),
+  GAP(  ' ')
   ;
   //@formatter:on
 
-    val keyPad = parseBoard(
+  val keyPad = parseBoard(
     """
     789
     456
@@ -168,6 +165,7 @@ enum class DirectionalPadKey(val c: Char) : Key {
   LEFT( '<'),
   DOWN( 'v'),
   RIGHT('>'),
+  GAP(  ' ')
   //@formatter:on
   ;
 
