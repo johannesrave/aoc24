@@ -80,34 +80,24 @@ private fun List<Key>.expand(): List<DirectionalPadKey> {
       val couldHitGapGoingRIGHT = from.pos.x == GAP.pos.x && to.pos.y == GAP.pos.y
       val couldHitGapGoingLeft = from.pos.y == GAP.pos.y && to.pos.x == GAP.pos.x
 
-      if (couldHitGapGoingLeft) {
-        (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
-      } else if (couldHitGapGoingRIGHT) {
-        (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
-      } else if (horizontalMove == RIGHT && verticalMove == DOWN) {
-        (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
-      } else {
-        (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+      when {
+        couldHitGapGoingLeft -> {
+          (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
+        }
+        couldHitGapGoingRIGHT -> {
+          (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+        }
+        horizontalMove == RIGHT && verticalMove == DOWN -> {
+          (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
+        }
+        else -> {
+          (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+        }
       }
     }.flatten()
 }
 
-
-fun <T> weave(listA: List<T>, listB: List<T>): List<T> {
-  val list = mutableListOf<T>()
-  val (longerList, shorterList) = if (listA.size >= listB.size) listA to listB else listB to listA
-  for (i in longerList.indices) {
-    list.add(longerList[i])
-    if (i <= shorterList.lastIndex) {
-      list.add(shorterList[i])
-    }
-  }
-  return list
-}
-
-interface Key {
-  val pos: Pos
-}
+interface Key { val pos: Pos }
 
 enum class NumericPadKey(val c: Char) : Key {
   //@formatter:off
@@ -153,6 +143,7 @@ enum class NumericPadKey(val c: Char) : Key {
       '7' -> SEVEN
       '8' -> EIGHT
       '9' -> NINE
+      ' ' -> GAP
       else -> throw IllegalArgumentException("Illegal char: $c")
     }
   }
@@ -194,6 +185,7 @@ enum class DirectionalPadKey(val c: Char) : Key {
       '<' -> LEFT
       'v' -> DOWN
       '>' -> RIGHT
+      ' ' -> GAP
       else -> throw IllegalArgumentException("Illegal char: $c")
     }
   }
