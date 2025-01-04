@@ -20,10 +20,10 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day21BTest = Day21B("input/day21_test")
-  val day21BTestResult = day21BTest.solve()
-  println("Test result for Day21B: $day21BTestResult")
-  assert(day21BTestResult == 1)
+//  val day21BTest = Day21B("input/day21_test")
+//  val day21BTestResult = day21BTest.solve()
+//  println("Test result for Day21B: $day21BTestResult")
+//  assert(day21BTestResult == 1)
 
   val day21B = Day21B("input/day21_input")
   val duration21B = measureTimeMillis {
@@ -41,9 +41,9 @@ data class Day21A(
     val solutionsPerLine = input.split("\n").map { numericalCodeString ->
       val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }
 
-      val firstExpansion = (listOf(NumericPadKey.A) + numericalKeys).expand()
-      val secondExpansion = (listOf(A) + firstExpansion).expand()
-      val thirdExpansion = (listOf(A) + secondExpansion).expand()
+      val firstExpansion = (listOf(NumericPadKey.A) + numericalKeys).expandKeys()
+      val secondExpansion = (listOf(A) + firstExpansion).expandKeys()
+      val thirdExpansion = (listOf(A) + secondExpansion).expandKeys()
 
       println(numericalCodeString)
       println(firstExpansion.joinToString(separator = ""))
@@ -62,42 +62,64 @@ data class Day21B(
   val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
   fun solve(input: String = this.input): Int {
-    return 0
+    val solutionsPerLine = input.split("\n").map { numericalCodeString ->
+      val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }.toMutableList()
+      println(numericalCodeString)
+      var keys = (listOf(NumericPadKey.A) + numericalKeys).expandKeys()
+
+      for (i in 1 until 25) {
+        keys = keys.expandKeys()
+//        println(keys.joinToString(separator = ""))
+      }
+
+      println("" + numericalCodeString.dropLast(1).toInt() + " * " + keys.size)
+
+      numericalCodeString.dropLast(1).toInt() * keys.size
+    }
+    return solutionsPerLine.sum()
   }
 }
 
-private fun List<Key>.expand(): List<DirectionalPadKey> {
-  return windowed(2)
-    .map { (from, to) ->
-      val vector = to.pos - from.pos
+private fun List<Key>.expandKeys(): List<DirectionalPadKey> =
+  windowed(2).map { (from, to) -> expand(to, from) }.flatten()
 
-      val horizontalDist = abs(vector.x)
-      val verticalDist = abs(vector.y)
+private fun expand(
+  to: Key,
+  from: Key
+): List<DirectionalPadKey> {
+  val vector = to.pos - from.pos
 
-      val horizontalMove = if (vector.x > 0) RIGHT else LEFT
-      val verticalMove = if (vector.y > 0) DOWN else UP
+  val horizontalDist = abs(vector.x)
+  val verticalDist = abs(vector.y)
 
-      val couldHitGapGoingRIGHT = from.pos.x == GAP.pos.x && to.pos.y == GAP.pos.y
-      val couldHitGapGoingLeft = from.pos.y == GAP.pos.y && to.pos.x == GAP.pos.x
+  val horizontalMove = if (vector.x > 0) RIGHT else LEFT
+  val verticalMove = if (vector.y > 0) DOWN else UP
 
-      when {
-        couldHitGapGoingLeft -> {
-          (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
-        }
-        couldHitGapGoingRIGHT -> {
-          (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
-        }
-        horizontalMove == RIGHT && verticalMove == DOWN -> {
-          (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
-        }
-        else -> {
-          (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
-        }
-      }
-    }.flatten()
+  val couldHitGapGoingRIGHT = from.pos.x == GAP.pos.x && to.pos.y == GAP.pos.y
+  val couldHitGapGoingLeft = from.pos.y == GAP.pos.y && to.pos.x == GAP.pos.x
+
+  return when {
+    couldHitGapGoingLeft -> {
+      (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
+    }
+
+    couldHitGapGoingRIGHT -> {
+      (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+    }
+
+    horizontalMove == RIGHT && verticalMove == DOWN -> {
+      (verticalMove * verticalDist) + (horizontalMove * horizontalDist) + A
+    }
+
+    else -> {
+      (horizontalMove * horizontalDist) + (verticalMove * verticalDist) + A
+    }
+  }
 }
 
-interface Key { val pos: Pos }
+interface Key {
+  val pos: Pos
+}
 
 enum class NumericPadKey(val c: Char) : Key {
   //@formatter:off
