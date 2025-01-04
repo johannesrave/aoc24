@@ -11,21 +11,22 @@ fun main() {
   val day21ATest = Day21A("input/day21_test")
   val day21ATestResult = day21ATest.solve()
   println("Test result for Day21A: $day21ATestResult")
-  assert(day21ATestResult == 126384)
+  assert(day21ATestResult == 126384.toBigInteger())
 
   val day21A = Day21A("input/day21_input")
   val durationA = measureTimeMillis {
     val solution = day21A.solve()
     println("Solution for Day21A: $solution")
-    assert(solution < 170862)
-    assert(solution > 166706)
+    assert(solution == 169390.toBigInteger())
   }
   println("Solution took $durationA milliseconds")
 
-//  val day21BTest = Day21B("input/day21_test")
-//  val day21BTestResult = day21BTest.solve()
-//  println("Test result for Day21B: $day21BTestResult")
-//  assert(day21BTestResult == 1)
+  val day21BTest = Day21B("input/day21_test")
+  val day21BTestResult = day21BTest.solve()
+  println("Test result for Day21B: $day21BTestResult")
+  assert(day21BTestResult == 154115708116294.toBigInteger())
+  assert(day21BTestResult == 175396398527088.toBigInteger())
+  assert(day21BTestResult == 70069147268844.toBigInteger())
 
   val day21B = Day21B("input/day21_input")
   val duration21B = measureTimeMillis {
@@ -38,24 +39,22 @@ fun main() {
 }
 
 data class Day21A(
-  val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
+  val inputPath: String,
+  val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-  fun solve(input: String = this.input): Int {
+  fun solve(input: String = this.input): BigInteger {
     val solutionsPerLine = input.split("\n").map { numericalCodeString ->
-      val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }
-
-      val firstExpansion = (listOf(NumericPadKey.A) + numericalKeys).expandKeys()
-      val secondExpansion = (listOf(A) + firstExpansion).expandKeys()
-      val thirdExpansion = (listOf(A) + secondExpansion).expandKeys()
-
+      val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }.toMutableList()
       println(numericalCodeString)
-      println(firstExpansion.joinToString(separator = ""))
-      println(secondExpansion.joinToString(separator = ""))
-      println(thirdExpansion.joinToString(separator = ""))
 
-      println("" + numericalCodeString.dropLast(1).toInt() + " * " + thirdExpansion.size)
+      val maxDepth = 2
+      val size = (listOf(NumericPadKey.A) + numericalKeys)
+        .windowed(2)
+        .map { (from, to) -> memoizedExpand(ExpandInput(from, to, 0, maxDepth)) }
+        .sum()
 
-      numericalCodeString.dropLast(1).toInt() * thirdExpansion.size
+      println("" + numericalCodeString.dropLast(1).toInt() + " * " + size)
+      numericalCodeString.dropLast(1).toBigInteger() * size
     }
     return solutionsPerLine.sum()
   }
@@ -69,11 +68,13 @@ data class Day21B(
       val numericalKeys = numericalCodeString.map { c -> NumericPadKey.from(c) }.toMutableList()
       println(numericalCodeString)
 
+      val maxDepth = 25
       val size = (listOf(NumericPadKey.A) + numericalKeys)
         .windowed(2)
-        .map { (from, to) -> memoizedExpand(ExpandInput(from, to, 1, maxDepth = 25)) }
+        .map { (from, to) -> memoizedExpand(ExpandInput(from, to, 0, maxDepth)) }
         .sum()
 
+      println("" + numericalCodeString.dropLast(1).toInt() + " * " + size)
       numericalCodeString.dropLast(1).toBigInteger() * size
     }
     return solutionsPerLine.sum()
@@ -239,15 +240,4 @@ enum class DirectionalPadKey(val c: Char) : Key {
 
   operator fun times(n: Int) = List(n) { this }
 
-  companion object {
-    fun from(c: Char): DirectionalPadKey = when (c) {
-      '^' -> UP
-      'A' -> A
-      '<' -> LEFT
-      'v' -> DOWN
-      '>' -> RIGHT
-      ' ' -> GAP
-      else -> throw IllegalArgumentException("Illegal char: $c")
-    }
-  }
 }
