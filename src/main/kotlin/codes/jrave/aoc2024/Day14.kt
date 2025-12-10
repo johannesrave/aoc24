@@ -1,15 +1,20 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Pos
+import codes.jrave.Velocity
+import codes.jrave.emptyBoard
+import codes.jrave.markPositions
+import codes.jrave.toPrintString
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day14ATest = Day14A("input/day14_test")
+  val day14ATest = Day14A("input/2024/day14_test")
   val day14ATestResult = day14ATest.solve(rows = 7, columns = 11, seconds = 100)
   println("Test result for Day14A: $day14ATestResult")
   assert(day14ATestResult == 12)
 
-  val day14A = Day14A("input/day14_input")
+  val day14A = Day14A("input/2024/day14_input")
   val durationA = measureTimeMillis {
     val solution = day14A.solve(rows = 103, columns = 101, seconds = 100)
     println("Solution for Day14A: $solution")
@@ -17,7 +22,7 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day14B = Day14B("input/day14_input")
+  val day14B = Day14B("input/2024/day14_input")
   val duration14B = measureTimeMillis {
     day14B.solve(rows = 103, columns = 101, maxSeconds = 7132)
   }
@@ -97,10 +102,10 @@ private fun parseRobotPosToVelocity(
 }
 
 private fun moveRobotsForSeconds(
-  robotPosToVelocity: List<Pair<Pos, Velocity>>,
-  rows: Int,
-  columns: Int,
-  n: Int
+    robotPosToVelocity: List<Pair<Pos, Velocity>>,
+    rows: Int,
+    columns: Int,
+    n: Int
 ): List<Pos> {
   val positionsAfterMovement = robotPosToVelocity
     .map { (pos, velocity) -> pos + (velocity * n) }
@@ -108,7 +113,7 @@ private fun moveRobotsForSeconds(
     .map { pos ->
       val x = if (pos.x < 0) pos.x + columns else pos.x
       val y = if (pos.y < 0) pos.y + rows else pos.y
-      Pos(y, x)
+        Pos(y, x)
     }
   return positionsAfterMovement
 }

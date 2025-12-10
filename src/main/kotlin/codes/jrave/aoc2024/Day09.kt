@@ -1,16 +1,17 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.sum
 import java.io.File
 import java.math.BigInteger
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day09ATest = Day09A("input/day09_test")
+  val day09ATest = Day09A("input/2024/day09_test")
   val day09ATestResult = day09ATest.solve()
   println("Test result for Day09A: $day09ATestResult")
   assert(day09ATestResult == 1928.toBigInteger())
 
-  val day09A = Day09A("input/day09_input")
+  val day09A = Day09A("input/2024/day09_input")
   val durationA = measureTimeMillis {
     val solution = day09A.solve()
     println("Solution for Day09A: $solution")
@@ -18,12 +19,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day09BTest = Day09B("input/day09_test")
+  val day09BTest = Day09B("input/2024/day09_test")
   val day09BTestResult = day09BTest.solve()
   println("Test result for Day09B: $day09BTestResult")
   assert(day09BTestResult == 2858.toBigInteger())
 
-  val day09B = Day09B("input/day09_input")
+  val day09B = Day09B("input/2024/day09_input")
   val duration09B = measureTimeMillis {
     val solution = day09B.solve()
     println("Solution for Day09B: $solution")

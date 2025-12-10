@@ -1,17 +1,19 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
 import arrow.core.MemoizedDeepRecursiveFunction
+import codes.jrave.sum
 import java.io.File
 import java.math.BigInteger
+import kotlin.invoke
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day11ATest = Day11A("input/day11_test")
+  val day11ATest = Day11A("input/2024/day11_test")
   val day11ATestResult = day11ATest.solve()
   println("Test result for Day11A: $day11ATestResult")
   assert(day11ATestResult == 55312.toBigInteger())
 
-  val day11A = Day11A("input/day11_input")
+  val day11A = Day11A("input/2024/day11_input")
   val durationA = measureTimeMillis {
     val solution = day11A.solve()
     println("Solution for Day11A: $solution")
@@ -19,12 +21,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day11BTest = Day11B("input/day11_test")
+  val day11BTest = Day11B("input/2024/day11_test")
   val day11BTestResult = day11BTest.solve()
   println("Test result for Day11B: $day11BTestResult")
   assert(day11BTestResult == 65601038650482.toBigInteger())
 
-  val day11B = Day11B("input/day11_input")
+  val day11B = Day11B("input/2024/day11_input")
   val duration11B = measureTimeMillis {
     val solution = day11B.solve()
     println("Solution for Day11B: $solution")

@@ -1,17 +1,22 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
 import codes.jrave.Direction.*
+import codes.jrave.findFirstPosition
+import codes.jrave.findPositions
+import codes.jrave.get
+import codes.jrave.minimalDistanceBoard
+import codes.jrave.parseBoard
 import java.io.File
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day20ATest = Day20A("input/day20_test")
+  val day20ATest = Day20A("input/2024/day20_test")
   val day20ATestResult = day20ATest.solve(savedStepsThreshold = 20)
   println("Test result for Day20A: $day20ATestResult")
   assert(day20ATestResult == 5) // could be parametrized to look for the 5 cheats saving 20 or more
 
-  val day20A = Day20A("input/day20_input")
+  val day20A = Day20A("input/2024/day20_input")
   val durationA = measureTimeMillis {
     val solution = day20A.solve(savedStepsThreshold = 100)
     println("Solution for Day20A: $solution")
@@ -19,12 +24,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day20BTest = Day20B("input/day20_test")
+  val day20BTest = Day20B("input/2024/day20_test")
   val day20BTestResult = day20BTest.solve(savedStepsThreshold = 50)
   println("Test result for Day20B: $day20BTestResult")
   assert(day20BTestResult == 285)
 
-  val day20B = Day20B("input/day20_input")
+  val day20B = Day20B("input/2024/day20_input")
   val duration20B = measureTimeMillis {
     val solution = day20B.solve(savedStepsThreshold = 100)
     println("Solution for Day20B: $solution")

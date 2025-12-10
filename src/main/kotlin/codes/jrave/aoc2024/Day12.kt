@@ -1,16 +1,25 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Direction
 import codes.jrave.Direction.*
+import codes.jrave.Pos
+import codes.jrave.contains
+import codes.jrave.emptyBoard
+import codes.jrave.get
+import codes.jrave.markPositions
+import codes.jrave.parseBoard
+import codes.jrave.set
+import codes.jrave.toPrintString
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day12ATest = Day12A("input/day12_test")
+  val day12ATest = Day12A("input/2024/day12_test")
   val day12ATestResult = day12ATest.solve()
   println("Test result for Day12A: $day12ATestResult")
   assert(day12ATestResult == 1930)
 
-  val day12A = Day12A("input/day12_input")
+  val day12A = Day12A("input/2024/day12_input")
   val durationA = measureTimeMillis {
     val solution = day12A.solve()
     println("Solution for Day12A: $solution")
@@ -18,12 +27,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day12BTest = Day12B("input/day12_test")
+  val day12BTest = Day12B("input/2024/day12_test")
   val day12BTestResult = day12BTest.solve()
   println("Test result for Day12B: $day12BTestResult")
   assert(day12BTestResult == 1206)
 
-  val day12B = Day12B("input/day12_input")
+  val day12B = Day12B("input/2024/day12_input")
   val duration12B = measureTimeMillis {
     val solution = day12B.solve()
     println("Solution for Day12B: $solution")

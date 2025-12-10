@@ -1,16 +1,24 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Direction
+import codes.jrave.Pos
+import codes.jrave.contains
+import codes.jrave.emptyBoard
+import codes.jrave.get
+import codes.jrave.markPositions
+import codes.jrave.set
+import codes.jrave.toPrintString
 import java.io.File
 import java.util.PriorityQueue
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day18ATest = Day18A("input/day18_test")
+  val day18ATest = Day18A("input/2024/day18_test")
   val day18ATestResult = day18ATest.solve(boardDimension = 7, bytesDropped = 12)
   println("Test result for Day18A: $day18ATestResult")
   assert(day18ATestResult == 22)
 
-  val day18A = Day18A("input/day18_input")
+  val day18A = Day18A("input/2024/day18_input")
   val durationA = measureTimeMillis {
     val solution = day18A.solve(boardDimension = 71, bytesDropped = 1024)
     println("Solution for Day18A: $solution")
@@ -18,12 +26,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day18BTest = Day18B("input/day18_test")
+  val day18BTest = Day18B("input/2024/day18_test")
   val day18BTestResult = day18BTest.solve(boardDimension = 7, bytesDropped = 12)
   println("Test result for Day18B: $day18BTestResult")
   assert(day18BTestResult == "6,1")
 
-  val day18B = Day18B("input/day18_input")
+  val day18B = Day18B("input/2024/day18_input")
   val duration18B = measureTimeMillis {
     val solution = day18B.solve(boardDimension = 71, bytesDropped = 1024)
     println("Solution for Day18B: $solution")
@@ -88,10 +96,10 @@ data class Day18B(
 
 
 private fun minimalDistanceBoard(
-  board: Array<CharArray>,
-  startPos: Pos,
-  endPos: Pos,
-  wall: Char = '#'
+    board: Array<CharArray>,
+    startPos: Pos,
+    endPos: Pos,
+    wall: Char = '#'
 ): Array<IntArray> {
   // this could be initialized to Int.MAX_VALUE instead,
   // I'm just using six digits for more readable prints
@@ -99,7 +107,7 @@ private fun minimalDistanceBoard(
   minimalCostBoard[startPos] = 0
 
   val queue = PriorityQueue { posA: Pos, posB: Pos ->
-    posA.manhattanDistance(endPos) - posB.manhattanDistance(endPos)
+      posA.manhattanDistance(endPos) - posB.manhattanDistance(endPos)
   }
 
   queue.add(startPos)

@@ -1,14 +1,19 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Pos
+import codes.jrave.contains
+import codes.jrave.markPositions
+import codes.jrave.parseBoard
+import codes.jrave.toPrintString
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day08ATest = Day08A("input/day08_test")
+  val day08ATest = Day08A("input/2024/day08_test")
   val day08ATestResult = day08ATest.solve()
   assert(day08ATestResult == 14)
 
-  val day08A = Day08A("input/day08_input")
+  val day08A = Day08A("input/2024/day08_input")
   val durationA = measureTimeMillis {
     val solution = day08A.solve()
     println("Solution for Day08A: $solution")
@@ -16,12 +21,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day08BTest = Day08B("input/day08_test")
+  val day08BTest = Day08B("input/2024/day08_test")
   val day08BTestResult = day08BTest.solve()
   println("Test result for Day08B: $day08BTestResult")
   assert(day08BTestResult == 34)
 
-  val day08B = Day08B("input/day08_input")
+  val day08B = Day08B("input/2024/day08_input")
   val duration08B = measureTimeMillis {
     val solution = day08B.solve()
     println("Solution for Day08B: $solution")

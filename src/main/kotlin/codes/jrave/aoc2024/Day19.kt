@@ -1,16 +1,16 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
 import java.io.File
 import java.util.PriorityQueue
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day19ATest = Day19A("input/day19_test")
+  val day19ATest = Day19A("input/2024/day19_test")
   val day19ATestResult = day19ATest.solve()
   println("Test result for Day19A: $day19ATestResult")
   assert(day19ATestResult == 6)
 
-  val day19A = Day19A("input/day19_input")
+  val day19A = Day19A("input/2024/day19_input")
   val durationA = measureTimeMillis {
     val solution = day19A.solve()
     println("Solution for Day19A: $solution")
@@ -18,12 +18,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day19BTest = Day19B("input/day19_test")
+  val day19BTest = Day19B("input/2024/day19_test")
   val day19BTestResult = day19BTest.solve()
   println("Test result for Day19B: $day19BTestResult")
   assert(day19BTestResult == 16L)
 
-  val day19B = Day19B("input/day19_input")
+  val day19B = Day19B("input/2024/day19_input")
   val duration19B = measureTimeMillis {
     val solution = day19B.solve()
     println("Solution for Day19B: $solution")

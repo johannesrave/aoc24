@@ -1,19 +1,19 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
 import java.io.File
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day01A = Day01A("input/day01_input")
+  val day01A = Day01A("input/2024/day01_input")
   val durationA = measureTimeMillis { println("Solution for Day01A: ${day01A.solve()}") }
   println("solution took $durationA milliseconds")
 
-  val day01BTest = Day01B("input/day01_test")
+  val day01BTest = Day01B("input/2024/day01_test")
   assert(day01BTest.solve() == 31L)
 
 
-  val day01B = Day01B("input/day01_input")
+  val day01B = Day01B("input/2024/day01_input")
   val durationB = measureTimeMillis { println("Solution for Day01B: ${day01B.solve()}") }
   println("solution took $durationB milliseconds")
 

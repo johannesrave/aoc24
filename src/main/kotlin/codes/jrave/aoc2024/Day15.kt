@@ -1,16 +1,25 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Direction
 import codes.jrave.Direction.*
+import codes.jrave.Pos
+import codes.jrave.contains
+import codes.jrave.findFirstPosition
+import codes.jrave.findPositions
+import codes.jrave.get
+import codes.jrave.parseBoard
+import codes.jrave.set
+import codes.jrave.toPrintString
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day15ATest = Day15A("input/day15_test")
+  val day15ATest = Day15A("input/2024/day15_test")
   val day15ATestResult = day15ATest.solve()
   println("Test result for Day15A: $day15ATestResult")
   assert(day15ATestResult == 10092)
 
-  val day15A = Day15A("input/day15_input")
+  val day15A = Day15A("input/2024/day15_input")
   val durationA = measureTimeMillis {
     val solution = day15A.solve()
     println("Solution for Day15A: $solution")
@@ -18,12 +27,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day15BTest = Day15B("input/day15_test")
+  val day15BTest = Day15B("input/2024/day15_test")
   val day15BTestResult = day15BTest.solve()
   println("Test result for Day15B: $day15BTestResult")
   assert(day15BTestResult == 9021)
 
-  val day15B = Day15B("input/day15_input")
+  val day15B = Day15B("input/2024/day15_input")
   val duration15B = measureTimeMillis {
     val solution = day15B.solve()
     println("Solution for Day15B: $solution")
@@ -40,7 +49,7 @@ data class Day15A(
     val (boardString, directionsString) = input.split("\n\n")
 
     val board = parseBoard(boardString)
-    val robotDirections = directionsString.mapNotNull { c -> Direction.from(c) }
+    val robotDirections = directionsString.mapNotNull { c -> Companion.from(c) }
 
     println(board.toPrintString())
 
@@ -84,7 +93,7 @@ data class Day15B(
     val (boardString, directionsString) = input.split("\n\n")
 
     val board = parseBoard(boardString).widenBoard()
-    val robotDirections = directionsString.mapNotNull { c -> Direction.from(c) }
+    val robotDirections = directionsString.mapNotNull { c -> Companion.from(c) }
 
     println(board.toPrintString())
 

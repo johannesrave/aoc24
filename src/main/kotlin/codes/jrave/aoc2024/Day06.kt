@@ -1,15 +1,24 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Direction
 import codes.jrave.Direction.Companion.directionMarkers
+import codes.jrave.Pos
+import codes.jrave.Step
+import codes.jrave.contains
+import codes.jrave.deepClone
+import codes.jrave.findFirstPosition
+import codes.jrave.get
+import codes.jrave.parseBoard
+import codes.jrave.set
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day06ATest = Day06A("input/day06_test")
+  val day06ATest = Day06A("input/2024/day06_test")
   val day06ATestResult = day06ATest.solve().also { println(it) }
   assert(day06ATestResult == 41)
 
-  val day06A = Day06A("input/day06_input")
+  val day06A = Day06A("input/2024/day06_input")
   val durationA = measureTimeMillis {
     val solution = day06A.solve()
     println("Solution for Day06A: $solution")
@@ -17,12 +26,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day06BTest = Day06B("input/day06_test")
+  val day06BTest = Day06B("input/2024/day06_test")
   val day06BTestResult = day06BTest.solve()
   println("Test result for Day06B: $day06BTestResult")
   assert(day06BTestResult == 6)
 
-  val day06B = Day06B("input/day06_input")
+  val day06B = Day06B("input/2024/day06_input")
   val duration06B = measureTimeMillis {
     val solution = day06B.solve()
     println("Solution for Day06B: $solution")
@@ -40,7 +49,7 @@ data class Day06A(
 
     val guardPosition = board.findFirstPosition(directionMarkers)
     val guardMarker = board[guardPosition]
-    val direction = Direction.from(guardMarker)!!
+    val direction = Direction.Companion.from(guardMarker)!!
 
     val positions = walkPath(guardPosition, direction, board)
 
@@ -48,10 +57,10 @@ data class Day06A(
   }
 
   private fun walkPath(
-    pos: Pos,
-    direction: Direction,
-    board: Array<CharArray>,
-    block: Char = '#'
+      pos: Pos,
+      direction: Direction,
+      board: Array<CharArray>,
+      block: Char = '#'
   ): MutableSet<Pos> {
     var pos_ = pos
     var direction_ = direction
@@ -80,7 +89,7 @@ data class Day06B(
 
     val initialPosition = board.findFirstPosition(directionMarkers)
     val directionMarker = board[initialPosition]
-    val initialDirection = Direction.from(directionMarker)!!
+    val initialDirection = Direction.Companion.from(directionMarker)!!
 
     // the idea is to walk the path first to find all candidate-tiles for placing obstructions
     val (path, _) = walkPath(board, initialPosition, initialDirection, blockMarker)
@@ -110,10 +119,10 @@ data class Day06B(
   }
 
   private fun walkPath(
-    board: Array<CharArray>,
-    pos: Pos,
-    dir: Direction,
-    block: Char = '#'
+      board: Array<CharArray>,
+      pos: Pos,
+      dir: Direction,
+      block: Char = '#'
   ): Pair<List<Step>, Boolean> {
     val steps = mutableListOf(Step(pos, dir))
 

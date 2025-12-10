@@ -1,22 +1,33 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
+import codes.jrave.Direction
 import codes.jrave.Direction.*
+import codes.jrave.Pos
+import codes.jrave.Step
+import codes.jrave.findFirstPosition
+import codes.jrave.get
+import codes.jrave.markPositions
+import codes.jrave.parseBoard
+import codes.jrave.plus
+import codes.jrave.printWithPadding
+import codes.jrave.set
+import codes.jrave.toPrintString
 import java.io.File
 import java.util.PriorityQueue
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day16ATest0 = Day16A("input/day16_test_0")
+  val day16ATest0 = Day16A("input/2024/day16_test_0")
   val day16ATest0Result = day16ATest0.solve()
   println("Test result for Day16A: $day16ATest0Result")
   assert(day16ATest0Result == 7036)
 
-  val day16ATest1 = Day16A("input/day16_test_1")
+  val day16ATest1 = Day16A("input/2024/day16_test_1")
   val day16ATest1Result = day16ATest1.solve()
   println("Test result for Day16A: $day16ATest1Result")
   assert(day16ATest1Result == 11048)
 
-  val day16A = Day16A("input/day16_input")
+  val day16A = Day16A("input/2024/day16_input")
   val durationA = measureTimeMillis {
     val solution = day16A.solve()
     println("Solution for Day16A: $solution")
@@ -24,17 +35,17 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-  val day16BTest0 = Day16B("input/day16_test_0")
+  val day16BTest0 = Day16B("input/2024/day16_test_0")
   val day16BTest0Result = day16BTest0.solve()
   println("Test result for Day16B: $day16BTest0Result")
   assert(day16BTest0Result == 45)
 
-  val day16BTest1 = Day16B("input/day16_test_1")
+  val day16BTest1 = Day16B("input/2024/day16_test_1")
   val day16BTest1Result = day16BTest1.solve()
   println("Test result for Day16B: $day16BTest1Result")
   assert(day16BTest1Result == 64)
 
-  val day16B = Day16B("input/day16_input")
+  val day16B = Day16B("input/2024/day16_input")
   val duration16B = measureTimeMillis {
     val solution = day16B.solve()
     println("Solution for Day16B: $solution")
@@ -117,11 +128,11 @@ data class Day16B(
 }
 
 private fun minimalDistanceBoard(
-  board: Array<CharArray>,
-  startPos: Pos,
-  endPos: Pos,
-  startDir: Direction,
-  wall: Char = '#'
+    board: Array<CharArray>,
+    startPos: Pos,
+    endPos: Pos,
+    startDir: Direction,
+    wall: Char = '#'
 ): Array<IntArray> {
   // this could be initialized to Int.MAX_VALUE instead,
   // I'm just using six digits for more readable prints
@@ -129,7 +140,7 @@ private fun minimalDistanceBoard(
   minimalCostBoard[startPos] = 0
 
   val stepsQueue = PriorityQueue { stepA: Step, stepB: Step ->
-    stepA.pos.manhattanDistance(endPos) - stepB.pos.manhattanDistance(endPos)
+      stepA.pos.manhattanDistance(endPos) - stepB.pos.manhattanDistance(endPos)
   }
 
   stepsQueue.add(Step(startPos, startDir))

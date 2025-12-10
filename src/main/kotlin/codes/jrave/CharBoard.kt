@@ -4,7 +4,7 @@ import codes.jrave.Direction.*
 import java.util.PriorityQueue
 import kotlin.math.abs
 
-val NULL_CHAR: Char = '\u0000'
+const val NULL_CHAR: Char = '\u0000'
 
 fun parseBoard(input: String): Array<CharArray> =
   input.split("\n").map { line -> line.toCharArray() }.toTypedArray()

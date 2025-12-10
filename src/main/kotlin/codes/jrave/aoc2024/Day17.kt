@@ -1,16 +1,16 @@
-package codes.jrave
+package codes.jrave.aoc2024
 
 import arrow.core.memoize
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-  val day17ATest = Day17A("input/day17_test")
+  val day17ATest = Day17A("input/2024/day17_test")
   val day17ATestResult = day17ATest.solve()
   println("Test result for Day17A: $day17ATestResult")
   assert(day17ATestResult == "4,6,3,5,6,3,5,2,1,0")
 
-  val day17A = Day17A("input/day17_input")
+  val day17A = Day17A("input/2024/day17_input")
   val durationA = measureTimeMillis {
     val solution = day17A.solve()
     println("Solution for Day17A: $solution")
@@ -18,12 +18,12 @@ fun main() {
   }
   println("Solution took $durationA milliseconds")
 
-//  val day17BTest = Day17B("input/day17_test_1")
+//  val day17BTest = Day17B("input/2024/day17_test_1")
 //  val day17BTestResult = day17BTest.solve()
 //  println("Test result for Day17B: $day17BTestResult")
 //  assert(day17BTestResult == 117440L)
 
-  val day17B = Day17B("input/day17_input")
+  val day17B = Day17B("input/2024/day17_input")
   val duration17B = measureTimeMillis {
     val solution = day17B.solve()
     println("Solution for Day17B: $solution")
