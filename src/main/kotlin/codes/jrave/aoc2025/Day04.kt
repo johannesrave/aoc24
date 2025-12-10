@@ -1,5 +1,9 @@
 package codes.jrave.aoc2025
 
+import codes.jrave.allNeighbours
+import codes.jrave.findPositions
+import codes.jrave.get
+import codes.jrave.parseBoard
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -37,7 +41,16 @@ data class Day04A(
     val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
     fun solve(input: String = this.input): Long {
-        return 0L
+        val board = parseBoard(input)
+
+        val blocks = board.findPositions('@')
+
+        val movableBlocks = blocks.filter { pos ->
+            val blockedNeighbours = board.allNeighbours(pos).filter { neighbour -> board[neighbour] == '@' }
+            blockedNeighbours.size < 4
+        }
+
+        return movableBlocks.size.toLong()
     }
 }
 
