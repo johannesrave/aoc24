@@ -56,8 +56,8 @@ data class Day19A(
 
     while (queue.isNotEmpty()) {
       val subPattern = queue.remove()
-      if (towels.any { towel -> subPattern == towel }) return true;
-      towels.filter { towel -> subPattern.startsWith(towel) }
+      if (towels.any { towel -> subPattern == towel }) return true
+        towels.filter { towel -> subPattern.startsWith(towel) }
         .forEach { towel -> queue.add(subPattern.removePrefix(towel)) }
     }
     return false
@@ -90,8 +90,8 @@ data class Day19B(
     }
 
     for (i in pattern.indices) {
-      if(matches[i] < 1) continue;
-      for (towel in relevantTowels) {
+      if(matches[i] < 1) continue
+        for (towel in relevantTowels) {
         if (pattern.regionMatches(i+1, towel, 0, towel.length)) {
           val offset = i + towel.length
           if (offset in pattern.indices) {

@@ -101,9 +101,9 @@ data class Day09B(
         .indexOfFirst { slot -> slot is Slot && slot.length >= file.length }
 
       // if there is no such slot, leave everthing as it is and move on to the next file
-      if (slotIndex == -1) continue;
+      if (slotIndex == -1) continue
 
-      // fetch the slot object at the index and shorten it by the length of the file.
+        // fetch the slot object at the index and shorten it by the length of the file.
       val slot = memory[slotIndex] as Slot
       slot.length -= file.length
 

@@ -170,7 +170,7 @@ fun Array<CharArray>.minimalDistanceBoard(
         cost >= minimalDistanceBoard[lookAheadPos] -> continue
         else -> {
           minimalDistanceBoard[lookAheadPos] = cost
-          if (lookAheadPos != endPos) queue += lookAheadPos;
+          if (lookAheadPos != endPos) queue += lookAheadPos
         }
       }
     }

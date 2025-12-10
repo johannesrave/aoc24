@@ -87,9 +87,6 @@ data class Day21B(
   }
 }
 
-private fun List<Key>.expandKeys(): List<DirectionalPadKey> =
-  windowed(2).map { (from, to) -> expand(to, from) }.flatten()
-
 private fun expand(to: Key, from: Key): List<DirectionalPadKey> {
   val vector = to.pos - from.pos
 

@@ -77,8 +77,8 @@ data class Day14B(
 //        println(board.markPositions(positionsAfterMovement, 'X').toPrintString())
 //      }
 
-      if (initialPositions == positionsAfterMovement) println("repeated state after $i seconds");
-      if (i == 7132) {
+      if (initialPositions == positionsAfterMovement) println("repeated state after $i seconds")
+        if (i == 7132) {
         println("Board after $i seconds:")
         println(board.markPositions(positionsAfterMovement, 'X').toPrintString())
       }

@@ -137,9 +137,9 @@ private fun countPlotsAndStraightPerimetersPerRegion(regions: MutableSet<Mutable
     val straightEdges = mutableListOf<List<Edge>>()
 
     edges.forEach { edge ->
-      if (straightEdges.any { edge in it }) return@forEach;
+      if (straightEdges.any { edge in it }) return@forEach
 
-      val (pos, dir) = edge
+        val (pos, dir) = edge
       val edgesOnSameRowOrColumn = edges
         .filter { (_, otherDir) -> dir == otherDir }
         .filter { (otherPos, _) ->

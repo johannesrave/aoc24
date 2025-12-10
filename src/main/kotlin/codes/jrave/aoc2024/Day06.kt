@@ -49,7 +49,7 @@ data class Day06A(
 
     val guardPosition = board.findFirstPosition(directionMarkers)
     val guardMarker = board[guardPosition]
-    val direction = Direction.Companion.from(guardMarker)!!
+    val direction = Direction.from(guardMarker)!!
 
     val positions = walkPath(guardPosition, direction, board)
 
@@ -89,7 +89,7 @@ data class Day06B(
 
     val initialPosition = board.findFirstPosition(directionMarkers)
     val directionMarker = board[initialPosition]
-    val initialDirection = Direction.Companion.from(directionMarker)!!
+    val initialDirection = Direction.from(directionMarker)!!
 
     // the idea is to walk the path first to find all candidate-tiles for placing obstructions
     val (path, _) = walkPath(board, initialPosition, initialDirection, blockMarker)

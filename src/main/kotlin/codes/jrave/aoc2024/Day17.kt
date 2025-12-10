@@ -100,9 +100,9 @@ data class Day17A(
         // jnz
         3 -> {
           if (a == 0)
-            i += 2;
+            i += 2
           else
-            i = operand;
+            i = operand
         }
 
         // bxc
@@ -226,11 +226,11 @@ data class Day17B(
             matchingInstructionIndex++
             val nextValue = combo and 0b111
 
-            if (nextValue != instructionArray[matchingInstructionIndex]) break;
+            if (nextValue != instructionArray[matchingInstructionIndex]) break
 
-            if (matchingInstructionIndex >= 9) println("$aInitial:   ${instructionArray.slice(0..matchingInstructionIndex)}")
+              if (matchingInstructionIndex >= 9) println("$aInitial:   ${instructionArray.slice(0..matchingInstructionIndex)}")
 
-            if (matchingInstructionIndex == instructionArray.lastIndex) return aInitial;
+            if (matchingInstructionIndex == instructionArray.lastIndex) return aInitial
           }
         }
       }
