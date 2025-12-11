@@ -1,6 +1,10 @@
 package codes.jrave.aoc2025
 
+import codes.jrave.contains
+import codes.jrave.overlaps
+import codes.jrave.union
 import java.io.File
+import java.math.BigInteger
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -19,12 +23,14 @@ fun main() {
 
     val day05BTest = Day05B("input/2025/input5-test.txt")
     val day05BTestResult = day05BTest.solve()
-    println("Day5B: result: $day05BTestResult, expected result: 14, matches: ${day05BTestResult == 14L}")
+    println("Day5B: result: $day05BTestResult, expected result: 14, matches: ${day05BTestResult == 14.toBigInteger()}")
 
     val day05B = Day05B("input/2025/input5.txt")
     val duration05B = measureTimeMillis {
         val solution = day05B.solve()
-        println(solution > 279822644469933L)
+        println(Long.MAX_VALUE)
+        println(solution > 279822644469933.toBigInteger())
+        println(solution > 279822644470035.toBigInteger())
         println("Day5B: result: $solution, expected result: -, matches: ${solution == null}")
 
     }
@@ -49,7 +55,7 @@ data class Day05A(
 data class Day05B(
     val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-    fun solve(input: String = this.input): Long {
+    fun solve(input: String = this.input): BigInteger {
         val ranges = input.split("\n\n").first().split("\n")
             .map { line ->
                 val (start, end) = line.split("-").map { limit -> limit.toLong() }
@@ -63,23 +69,21 @@ data class Day05B(
             }
 
             val combinedRange = overlappingRanges.union()
-            acc - overlappingRanges + listOf(combinedRange)
+            (acc - overlappingRanges) + listOf(combinedRange)
         }
 
-        return combinedRanges.sumOf { it.last - it.first }
+        val overlaps = combinedRanges.none { combinedRanges.none { other -> it.overlaps(other) } }
+        val contains = ranges.filter { range -> combinedRanges.none { other -> range contains other } }
+
+        val longs = combinedRanges.sortedBy { it.first }.map { it to (it.last - it.first + 1) }
+
+        var sum = BigInteger.ZERO
+        for (range in combinedRanges) {
+            sum = sum.plus((range.last - range.first + 1).toBigInteger())
+        }
+
+        return sum
     }
 }
 
-operator fun LongRange.contains(other: LongRange): Boolean =
-    this.first <= other.first && other.last <= this.last
 
-
-fun LongRange.overlaps(other: LongRange): Boolean {
-    return (other in this) || (this in other) || this.first in other || this.last in other
-}
-
-fun Collection<LongRange>.union(): LongRange {
-    val min = this.minOf { it.first }
-    val max = this.maxOf { it.last }
-    return min..max
-}
