@@ -137,5 +137,37 @@ class RangeUtilsTest {
         assert(ranges.allOverlap())
     }
 
+    @Test
+    fun `groupIntoUnions returns correct unions of ranges`() {
+        val ranges = listOf(
+            2L..10L,
+            8L..12L,
+            14L..18L,
+            18L..20L,
+        )
 
+        val unions = ranges.groupIntoUnions()
+
+        assert(unions.size == 2)
+        assert(unions[0].first == 2L)
+        assert(unions[0].last == 12L)
+        assert(unions[1].first == 14L)
+        assert(unions[1].last == 20L)
+    }
+
+    @Test
+    fun `groupIntoUnions returns one union for duplicate ranges`() {
+        val ranges = listOf(
+            2L..10L,
+            2L..10L,
+            2L..10L,
+            2L..10L,
+        )
+
+        val unions = ranges.groupIntoUnions()
+
+        assert(unions.size == 1)
+        assert(unions[0].first == 2L)
+        assert(unions[0].last == 10L)
+    }
 }

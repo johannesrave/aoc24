@@ -19,6 +19,20 @@ fun Collection<LongRange>.allOverlap(): Boolean {
     return true
 }
 
+fun Collection<LongRange>.groupIntoUnions(): List<LongRange> {
+    val ranges = this.sortedBy { it.first }
+    val unions = emptyList<LongRange>().toMutableList()
+    for (range in ranges) {
+        val overlapping = unions.filter { range.overlaps(it) }.toMutableList()
+        unions.removeAll(overlapping)
+        overlapping.add(range)
+        val newUnion = overlapping.union()
+        unions.add(newUnion)
+    }
+
+    return unions
+}
+
 fun Collection<LongRange>.union(): LongRange {
     if (!this.allOverlap()) {
         throw RangesDisjunctException()
