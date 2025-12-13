@@ -30,6 +30,12 @@ fun Array<CharArray>.toPrintString(): String = joinEach().joinToString("\n")
 fun Array<CharArray>.transpose(): Array<CharArray> =
     this.first().mapIndexed { x, _ -> this.map { it[x] }.toCharArray() }.toTypedArray()
 
+fun Array<IntArray>.transpose(): Array<IntArray> =
+    this.first().mapIndexed { x, _ -> this.map { it[x] }.toIntArray() }.toTypedArray()
+
+fun Array<LongArray>.transpose(): Array<LongArray> =
+    this.first().mapIndexed { x, _ -> this.map { it[x] }.toLongArray() }.toTypedArray()
+
 fun Array<CharArray>.mirrorX(): Array<CharArray> =
     this.map { row -> row.reversedArray() }.toTypedArray()
 
