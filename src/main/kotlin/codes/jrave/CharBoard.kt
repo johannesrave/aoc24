@@ -168,7 +168,7 @@ fun Array<CharArray>.markSteps(steps: List<Step>, overrideChar: Char? = null): A
     return board_
 }
 
-// something dijkstra this way comes
+// omething dijkstra this way comes
 fun Array<CharArray>.minimalDistanceBoard(
     startPos: Pos,
     endPos: Pos,

@@ -1,5 +1,9 @@
 package codes.jrave.aoc2025
 
+import codes.jrave.Direction.*
+import codes.jrave.Pos
+import codes.jrave.findFirstPosition
+import codes.jrave.findPositions
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -11,7 +15,7 @@ fun main() {
     val day07A = Day07A("input/2025/input07.txt")
     val duration07A = measureTimeMillis {
         val solution = day07A.solve()
-        println("Day07A: result: $solution, expected result: 7326876294741, matches: ${solution == 7326876294741}")
+        println("Day07A: result: $solution, expected result: 1687, matches: ${solution == 1687L}")
 
     }
     println("Solution took $duration07A milliseconds")
@@ -34,7 +38,32 @@ data class Day07A(
     val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
     fun solve(input: String = this.input): Long {
-        return 0L
+        val board = input.lines().map { it.toCharArray() }.toTypedArray()
+        val endY = board.lastIndex
+
+        val start = board.findFirstPosition('S')
+        val splitters = board.findPositions('^').toMutableSet()
+        val splitterSize = splitters.size.toLong()
+        var beams = mutableSetOf(start)
+
+        while (beams.none { it.y == endY }) {
+            val newBeams = mutableSetOf<Pos>()
+            for (pos in beams) {
+                val posDown = pos + S
+                if (posDown in splitters) {
+                    splitters.remove(posDown)
+                    newBeams.add(posDown + W)
+                    newBeams.add(posDown + E)
+                } else {
+                    newBeams.add(posDown)
+                }
+            }
+            beams = newBeams
+        }
+        val unusedSplitterSize = splitters.size
+
+
+        return splitterSize - unusedSplitterSize
     }
 }
 
