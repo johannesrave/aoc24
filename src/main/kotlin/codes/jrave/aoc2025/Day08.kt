@@ -18,17 +18,17 @@ fun main() {
 
     println("Solution took $duration08A milliseconds")
 
-//    val day08BTest = Day08B("input/2025/input08-test.txt")
-//    val day08BTestResult = day08BTest.solve()
-//    println("Day08B: result: $day08BTestResult, expected result: 40, matches: ${day08BTestResult == 40L}")
-//
-//    val day08B = Day08B("input/2025/input08.txt")
-//    val duration08B = measureTimeMillis {
-//        val solution = day08B.solve()
-//        println("Day08B: result: $solution, expected result: 390684413472684, matches: ${solution == 390684413472684L}")
-//    }
-//
-//    println("Solution took $duration08B milliseconds")
+    val day08BTest = Day08B("input/2025/input08-test.txt")
+    val day08BTestResult = day08BTest.solve()
+    println("Day08B: result: $day08BTestResult, expected result: 25272, matches: ${day08BTestResult == 25272L}")
+
+    val day08B = Day08B("input/2025/input08.txt")
+    val duration08B = measureTimeMillis {
+        val solution = day08B.solve()
+        println("Day08B: result: $solution, expected result: 9259958565, matches: ${solution == 9259958565L}")
+    }
+
+    println("Solution took $duration08B milliseconds")
 }
 
 data class Day08A(
@@ -65,7 +65,34 @@ data class Day08B(
     val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
     fun solve(input: String = this.input): Long {
-        return 0L
+        val boxes = input.lines().map {
+            val (x, y, z) = it.split(',').map { coord -> coord.toDouble() }
+            JunctionBox(x, y, z)
+        }
+
+        val relations = findAllRelations(boxes) { a, b -> a.distanceTo(b) }
+        val connections = relations.sortedBy { it.distance }.toMutableList()
+        val circuits = boxes.map { mutableSetOf(it) }.toMutableSet()
+
+
+        var a: JunctionBox = JunctionBox(0.0, 0.0, 0.0)
+        var b: JunctionBox = JunctionBox(0.0, 0.0, 0.0)
+        while (circuits.size > 1) {
+            val minRel = connections.removeFirst()
+
+            a = minRel.a
+            b = minRel.b
+
+            val aCluster = circuits.find { it.contains(a) } ?: throw IllegalStateException()
+            val bCluster = circuits.find { it.contains(b) } ?: throw IllegalStateException()
+
+            if (aCluster != bCluster) {
+                circuits.removeIf { it.contains(b) }
+                aCluster.addAll(bCluster)
+            }
+        }
+
+        return (a.x * b.x).toLong()
     }
 }
 
