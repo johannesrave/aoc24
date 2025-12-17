@@ -1,6 +1,7 @@
 package codes.jrave.aoc2025
 
 import java.io.File
+import kotlin.math.absoluteValue
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -11,7 +12,7 @@ fun main() {
     val day09A = Day09A("input/2025/input09.txt")
     val duration09A = measureTimeMillis {
         val solution = day09A.solve()
-        println("Day09A: result: $solution, expected result: 123234, matches: ${solution == 123234L}")
+        println("Day09A: result: $solution, expected result: 4767418746, matches: ${solution == 4767418746L}")
     }
 
     println("Solution took $duration09A milliseconds")
@@ -34,7 +35,19 @@ data class Day09A(
     val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
     fun solve(input: String = this.input): Long {
-        return 0L
+
+        val redTiles = input.lines().map {
+            val (x, y) = it.split(',').map { coord -> coord.toLong() }
+            Pair(x, y)
+        }
+
+        val squares = findAllRelations(redTiles) { a, b ->
+            val xLength = (a.first - b.first).absoluteValue + 1
+            val yLength = (a.second - b.second).absoluteValue + 1
+            Math.multiplyExact(xLength, yLength)
+        }
+
+        return squares.maxBy { it.value }.value
     }
 }
 
