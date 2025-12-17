@@ -20,17 +20,17 @@ fun main() {
     }
     println("Solution took $duration07A milliseconds")
 
-//    val day07BTest = Day07B("input/2025/input6-test.txt")
-//    val day07BTestResult = day07BTest.solve()
-//    println("Day07B: result: $day07BTestResult, expected result: 3263827, matches: ${day07BTestResult == 3263827L}")
-//
-//    val day07B = Day07B("input/2025/input6.txt")
-//    val duration07B = measureTimeMillis {
-//        val solution = day07B.solve()
-//        println("Day07B: result: $solution, expected result: 10756007415204, matches: ${solution == 10756007415204L}")
-//
-//    }
-//    println("Solution took $duration07B milliseconds")
+    val day07BTest = Day07B("input/2025/input07-test.txt")
+    val day07BTestResult = day07BTest.solve()
+    println("Day07B: result: $day07BTestResult, expected result: 40, matches: ${day07BTestResult == 40L}")
+
+    val day07B = Day07B("input/2025/input07.txt")
+    val duration07B = measureTimeMillis {
+        val solution = day07B.solve()
+        println("Day07B: result: $solution, expected result: 390684413472684, matches: ${solution == 390684413472684L}")
+
+    }
+    println("Solution took $duration07B milliseconds")
 }
 
 data class Day07A(
@@ -71,6 +71,61 @@ data class Day07B(
     val inputPath: String, val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
     fun solve(input: String = this.input): Long {
-        return 0L
+        val initialBoard = input.lines().map { it.toCharArray() }
+        val targetRow = initialBoard.last().map { 'x' }.toCharArray()
+
+        val board = (initialBoard + targetRow).toTypedArray()
+
+        val start = SplitterNode(board.findFirstPosition('S'))
+
+        val splittings = board.findPositions('^')
+            .map { SplitterNode(it) }
+
+        val root = splittings.filter { it.pos.x == start.pos.x }.minBy { it.pos.y }
+
+        val endNodes = board.findPositions('x')
+            .map { SplitterNode(it) }
+
+        val queue = (splittings).toMutableList()
+        val targets = (splittings + endNodes)
+
+        do {
+            val cur = queue.removeLast()
+            val leftTarget = targets
+                .filter { it.pos.x == cur.pos.x - 1 && it.pos.y > cur.pos.y }
+                .minBy { it.pos.y }
+
+            val rightTarget = targets
+                .filter { it.pos.x == cur.pos.x + 1 && it.pos.y > cur.pos.y }
+                .minBy { it.pos.y }
+
+            leftTarget.parents.add(cur)
+            rightTarget.parents.add(cur)
+
+        } while (queue.isNotEmpty())
+
+        val sum = endNodes.sumOf { it.findPaths(root) }
+
+        return sum
+    }
+
+    data class SplitterNode(
+        val pos: Pos,
+        val parents: MutableSet<SplitterNode> = emptySet<SplitterNode>().toMutableSet(),
+        var paths: Long? = null
+    ) {
+        fun findPaths(root: SplitterNode): Long {
+            if (this == root) {
+                return 1L
+            }
+
+            if (paths == null) {
+                val parentPaths = parents.sumOf { it.findPaths(root) }
+                paths = parentPaths
+                return parentPaths
+            }
+
+            return paths!!
+        }
     }
 }
