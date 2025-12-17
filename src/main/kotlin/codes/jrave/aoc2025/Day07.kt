@@ -16,8 +16,8 @@ fun main() {
     val duration07A = measureTimeMillis {
         val solution = day07A.solve()
         println("Day07A: result: $solution, expected result: 1687, matches: ${solution == 1687L}")
-
     }
+
     println("Solution took $duration07A milliseconds")
 
     val day07BTest = Day07B("input/2025/input07-test.txt")
@@ -28,8 +28,8 @@ fun main() {
     val duration07B = measureTimeMillis {
         val solution = day07B.solve()
         println("Day07B: result: $solution, expected result: 390684413472684, matches: ${solution == 390684413472684L}")
-
     }
+
     println("Solution took $duration07B milliseconds")
 }
 
