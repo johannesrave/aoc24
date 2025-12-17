@@ -1,17 +1,19 @@
 package codes.jrave.aoc2025
 
 import java.io.File
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.system.measureTimeMillis
 
 fun main() {
     val day08ATest = Day08A("input/2025/input08-test.txt")
-    val day08ATestResult = day08ATest.solve()
+    val day08ATestResult = day08ATest.solve(maxConnections = 10)
     println("Day08A: result: $day08ATestResult, expected result: 40, matches: ${day08ATestResult == 40L}")
 
     val day08A = Day08A("input/2025/input08.txt")
     val duration08A = measureTimeMillis {
-        val solution = day08A.solve()
-        println("Day08A: result: $solution, expected result: 1687, matches: ${solution == 1687L}")
+        val solution = day08A.solve(maxConnections = 1000)
+        println("Day08A: result: $solution, expected result: 123234, matches: ${solution == 123234L}")
     }
 
     println("Solution took $duration08A milliseconds")
@@ -33,8 +35,29 @@ data class Day08A(
     val inputPath: String,
     val input: String = File(inputPath).readText(Charsets.UTF_8)
 ) {
-    fun solve(input: String = this.input): Long {
-        return 0L
+    fun solve(input: String = this.input, maxConnections: Int): Long {
+        val boxes = input.lines().map {
+            val (x, y, z) = it.split(',').map { coord -> coord.toDouble() }
+            JunctionBox(x, y, z)
+        }
+
+        val relations = findAllRelations(boxes) { a, b -> a.distanceTo(b) }
+        val connections = relations.sortedBy { it.distance }.take(maxConnections).toMutableList()
+        val circuits = boxes.map { mutableSetOf(it) }.toMutableSet()
+
+        while (connections.isNotEmpty()) {
+            val minRel = connections.removeFirst()
+
+            val aCluster = circuits.find { it.contains(minRel.a) } ?: throw IllegalStateException()
+            val bCluster = circuits.find { it.contains(minRel.b) } ?: throw IllegalStateException()
+
+            if (aCluster != bCluster) {
+                circuits.removeIf { it.contains(minRel.b) }
+                aCluster.addAll(bCluster)
+            }
+        }
+
+        return circuits.map { it.size }.sortedByDescending { it }.take(3).reduce { acc, cur -> acc * cur }.toLong()
     }
 }
 
@@ -45,3 +68,26 @@ data class Day08B(
         return 0L
     }
 }
+
+data class JunctionBox(val x: Double, val y: Double, val z: Double) {
+    fun distanceTo(other: JunctionBox): Double {
+        val xDist = (this.x - other.x).pow(2)
+        val yDist = (this.y - other.y).pow(2)
+        val zDist = (this.z - other.z).pow(2)
+        return sqrt(xDist + yDist + zDist)
+    }
+}
+
+fun <T> findAllRelations(nodes: Collection<T>, distanceFunction: (T, T) -> Double): Collection<Relation<T>> {
+    val queue = nodes.toMutableList()
+    val relations = listOf<Relation<T>>().toMutableList()
+    while (queue.isNotEmpty()) {
+        val cur = queue.removeLast()
+        val newRelations = queue.map { other -> Relation(cur, other, distanceFunction(cur, other)) }
+        relations.addAll(newRelations)
+    }
+    return relations
+}
+
+
+data class Relation<T>(val a: T, val b: T, val distance: Double)
