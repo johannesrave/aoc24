@@ -42,7 +42,7 @@ data class Day08A(
         }
 
         val relations = findAllRelations(boxes) { a, b -> a.distanceTo(b) }
-        val connections = relations.sortedBy { it.distance }.take(maxConnections).toMutableList()
+        val connections = relations.sortedBy { it.value }.take(maxConnections).toMutableList()
         val circuits = boxes.map { mutableSetOf(it) }.toMutableSet()
 
         while (connections.isNotEmpty()) {
@@ -71,7 +71,7 @@ data class Day08B(
         }
 
         val relations = findAllRelations(boxes) { a, b -> a.distanceTo(b) }
-        val connections = relations.sortedBy { it.distance }.toMutableList()
+        val connections = relations.sortedBy { it.value }.toMutableList()
         val circuits = boxes.map { mutableSetOf(it) }.toMutableSet()
 
 
@@ -105,16 +105,4 @@ data class JunctionBox(val x: Double, val y: Double, val z: Double) {
     }
 }
 
-fun <T> findAllRelations(nodes: Collection<T>, distanceFunction: (T, T) -> Double): Collection<Relation<T>> {
-    val queue = nodes.toMutableList()
-    val relations = listOf<Relation<T>>().toMutableList()
-    while (queue.isNotEmpty()) {
-        val cur = queue.removeLast()
-        val newRelations = queue.map { other -> Relation(cur, other, distanceFunction(cur, other)) }
-        relations.addAll(newRelations)
-    }
-    return relations
-}
 
-
-data class Relation<T>(val a: T, val b: T, val distance: Double)
