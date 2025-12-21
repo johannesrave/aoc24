@@ -47,20 +47,18 @@ fun String.splitOnIndices(indices: List<Int>): List<String> {
 }
 
 fun buildCombinations(length: Int, items: Collection<Int>): List<IntArray> {
-    //    val noOfArrays = items.size.toDouble().pow(length).toInt()
-    //    val arrays = repeat(noOfArrays) { arrayOfNulls<Int>(length) }
     val combinations = emptyList<IntArray>().toMutableList()
-    val queue = items.sortedBy { it }.map { listOf(it) }.toMutableList()
+    val queue = items.map { listOf(it) }.toMutableList()
     while (queue.isNotEmpty()) {
         val combination = queue.removeLast()
-        if (combination.size >= length) {
-            combinations.add(combination.toIntArray())
-        } else {
+        if (combination.size < length) {
             for (item in items) {
                 queue.add(combination + item)
             }
+        } else {
+            combinations.add(combination.toIntArray())
         }
     }
 
-    return combinations.sortedBy { it.sum() }
+    return combinations
 }

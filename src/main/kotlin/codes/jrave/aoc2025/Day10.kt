@@ -36,50 +36,41 @@ data class Day10A(
 ) {
     fun solve(input: String = this.input): Long {
 
-        val flips = mutableListOf<Int>()
-        val machines = parseMachines(input)
-
-        machineLoop@ for (machine in machines) {
+        val winningCombos = parseMachines(input).map { machine ->
             val indicators = machine.targetIndicators.copyOf()
-            val combos = buildCombinations(machine.switches.size, (0..3).toList())
-            for (switchFlipCombo in combos) {
-                indicators.fill(false)
+            val switchFlipCombinations = buildCombinations(machine.switches.size, (0..3).toList())
+                .sortedBy { it.sum() }
 
-                val appendedIndicatorFlips = switchFlipCombo
-                    .foldIndexed(mutableListOf<Int>()) { i, acc, times ->
-                        repeat(times) {
-                            acc.addAll(machine.switches[i].toggledIndicators)
-                        }
-                        acc
+            for (switchFlipCombo in switchFlipCombinations) {
+                // true indicators need to appear an uneven number of times in the switches
+                // so we can append all indicators being flipped by the current switchFlipCombo
+                // and check for even and uneven occurrence of the indices (convoluted but i think correct)
+                val indicatorsFlipped = mutableListOf<Int>()
+
+                for ((i, switch) in machine.switches.withIndex()) {
+                    val timesSwitchIsFlipped = switchFlipCombo[i]
+                    repeat(timesSwitchIsFlipped) {
+                        indicatorsFlipped.addAll(switch.toggledIndicators)
                     }
-
-                machine.targetIndicators.forEachIndexed { indicatorIndex, isIndicatorOn ->
-                    // true indicators need to appear an uneven number of times in the switches
-                    // so we can append all indicators being flipped by the current switchFlipCombo
-                    // and check for even and uneven occurence of the indices (convoluted but i think correct)
-                    val occurrencesInFlips = appendedIndicatorFlips.count { it == indicatorIndex }
-                    indicators[indicatorIndex] = occurrencesInFlips % 2 == 1
                 }
 
-                //                for (i in switchFlipCombo) {
-                //                    val switch = machine.switches[i]
-                //                    for (j in switch.toggledIndicators) {
-                //                        indicators[j] = !indicators[j]
-                //                    }
-                //                }
-                if (indicators.contentEquals(machine.targetIndicators)) {
-                    println(switchFlipCombo.joinToString("-"))
-                    println(machine.targetIndicators.joinToString("|"))
-                    println(machine)
-                    flips.add(switchFlipCombo.sum())
-                    continue@machineLoop
+                val indicatorsAfterCombo = machine.targetIndicators.mapIndexed { targetIndicator, _ ->
+                    val occurrencesInFlips = indicatorsFlipped.count { indicator -> indicator == targetIndicator }
+                    occurrencesInFlips % 2 == 1
+                }.toBooleanArray()
+
+                if (indicatorsAfterCombo.contentEquals(machine.targetIndicators)) {
+                    val indcatorString = machine.targetIndicators.joinToString("") { if (it) "#" else "." }
+                    println(
+                        "For indicators $indcatorString flip the switches ${switchFlipCombo.joinToString("-")}"
+                    )
+                    return@map switchFlipCombo
                 }
             }
-
-            println()
+            intArrayOf()
         }
 
-        return flips.sum().toLong()
+        return winningCombos.sumOf { it.sum().toLong() }
     }
 
     private fun parseMachines(input: String): List<Machine> {
