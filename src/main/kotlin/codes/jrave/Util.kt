@@ -50,7 +50,7 @@ fun buildCombinations(length: Int, items: Collection<Int>): List<IntArray> {
     //    val noOfArrays = items.size.toDouble().pow(length).toInt()
     //    val arrays = repeat(noOfArrays) { arrayOfNulls<Int>(length) }
     val combinations = emptyList<IntArray>().toMutableList()
-    val queue = items.map { listOf(it) }.toMutableList()
+    val queue = items.sortedBy { it }.map { listOf(it) }.toMutableList()
     while (queue.isNotEmpty()) {
         val combination = queue.removeLast()
         if (combination.size >= length) {
@@ -62,5 +62,5 @@ fun buildCombinations(length: Int, items: Collection<Int>): List<IntArray> {
         }
     }
 
-    return combinations
+    return combinations.sortedBy { it.sum() }
 }
