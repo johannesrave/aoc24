@@ -62,3 +62,35 @@ fun buildCombinations(length: Int, items: Collection<Int>): List<IntArray> {
 
     return combinations
 }
+
+fun buildCombinationsLazily(places: Int, maxVariations: Int): Iterator<IntArray> = iterator {
+    val variations = 0..maxVariations
+    val queue = variations.map { listOf(it) }.toMutableList()
+    while (true) {
+        val combination = queue.removeLast()
+        if (combination.size < places) {
+            for (variation in variations) {
+                queue.add(combination + variation)
+            }
+        } else {
+            yield(combination.toIntArray())
+        }
+    }
+
+}
+
+fun buildCombinationSequence(places: Int, variantsPerPlace: Int): Sequence<IntArray> {
+    if (variantsPerPlace > 9) {
+        throw IllegalArgumentException("Only generate variations with the numbers 0..9 with this function.")
+    }
+
+    return generateSequence(1) { if (it < 10_000_000) it + 1 else null }
+        .map { n ->
+            val intArrayFromNumber = n.toString(variantsPerPlace)
+                .padStart(places, '0')
+                .toList()
+                .map { s -> s.toString().toInt() }
+                .toIntArray()
+            intArrayFromNumber
+        }
+}

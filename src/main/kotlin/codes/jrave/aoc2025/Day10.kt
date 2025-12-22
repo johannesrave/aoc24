@@ -1,33 +1,35 @@
 package codes.jrave.aoc2025
 
+import arrow.core.memoize
+import codes.jrave.buildCombinationSequence
 import codes.jrave.buildCombinations
 import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main() {
-    val day10ATest = Day10A("input/2025/input10-test.txt")
-    val day10ATestResult = day10ATest.solve()
-    println("Day10A: result: $day10ATestResult, expected result: 7, matches: ${day10ATestResult == 7L}")
-
-    val day10A = Day10A("input/2025/input10.txt")
-    val duration10A = measureTimeMillis {
-        val solution = day10A.solve()
-        println("Day10A: result: $solution, expected result: 578, matches: ${solution == 578L}")
-    }
-
-    println("Solution took $duration10A milliseconds")
-
-    //    val day10BTest = Day10B("input/2025/input10-test.txt")
-    //    val day10BTestResult = day10BTest.solve()
-    //    println("Day10B: result: $day10BTestResult, expected result: 24, matches: ${day10BTestResult == 24L}")
+    //    val day10ATest = Day10A("input/2025/input10-test.txt")
+    //    val day10ATestResult = day10ATest.solve()
+    //    println("Day10A: result: $day10ATestResult, expected result: 7, matches: ${day10ATestResult == 7L}")
     //
-    //    val day10B = Day10B("input/2025/input10.txt")
-    //    val duration10B = measureTimeMillis {
-    //        val solution = day10B.solve()
-    //        println("Day10B: result: $solution, expected result: 1461987144, matches: ${solution == 1461987144L}")
+    //    val day10A = Day10A("input/2025/input10.txt")
+    //    val duration10A = measureTimeMillis {
+    //        val solution = day10A.solve()
+    //        println("Day10A: result: $solution, expected result: 578, matches: ${solution == 578L}")
     //    }
     //
-    //    println("Solution took $duration10B milliseconds")
+    //    println("Solution took $duration10A milliseconds")
+
+    val day10BTest = Day10B("input/2025/input10-test.txt")
+    val day10BTestResult = day10BTest.solve()
+    println("Day10B: result: $day10BTestResult, expected result: 33, matches: ${day10BTestResult == 33L}")
+
+    val day10B = Day10B("input/2025/input10.txt")
+    val duration10B = measureTimeMillis {
+        val solution = day10B.solve()
+        println("Day10B: result: $solution, expected result: 1461987144, matches: ${solution == 1461987144L}")
+    }
+
+    println("Solution took $duration10B milliseconds")
 }
 
 data class Day10A(
@@ -54,7 +56,7 @@ data class Day10A(
                 }
 
                 val indicatorsAfterFlips = machine.targetIndicators.mapIndexed { targetIndicator, _ ->
-                    val occurrencesInFlips = indicatorsFlipped.count { indicator -> indicator == targetIndicator }
+                    val occurrencesInFlips = countOccurrences(indicatorsFlipped, targetIndicator)
                     occurrencesInFlips % 2 == 1
                 }.toBooleanArray()
 
@@ -80,35 +82,41 @@ data class Day10B(
     fun solve(input: String = this.input): Long {
 
         val winningCombos = parseMachines(input).map { machine ->
-            val switchFlipCombinations = buildCombinations(machine.switches.size, (0..3).toList())
+            val switchFlipCombinations = buildCombinationSequence(machine.switches.size, 8)
                 .sortedBy { it.sum() }
+
+            println("Generated ${switchFlipCombinations.count()}")
 
             for (switchFlipCombo in switchFlipCombinations) {
                 // true indicators need to appear an uneven number of times in the switches
                 // so we can append all indicators being flipped by the current switchFlipCombo
                 // and check for even and uneven occurrence of the indices (convoluted but i think correct)
-                val indicatorsFlipped = mutableListOf<Int>()
+                val allSwitchFlipsInCombo = mutableListOf<Int>()
 
                 for ((i, switch) in machine.switches.withIndex()) {
                     val timesSwitchIsFlipped = switchFlipCombo[i]
                     repeat(timesSwitchIsFlipped) {
-                        indicatorsFlipped.addAll(switch.toggledIndicators)
+                        allSwitchFlipsInCombo.addAll(switch.toggledIndicators)
                     }
                 }
 
-                val indicatorsAfterFlips = machine.targetIndicators.mapIndexed { targetIndicator, _ ->
-                    val occurrencesInFlips = indicatorsFlipped.count { indicator -> indicator == targetIndicator }
-                    occurrencesInFlips % 2 == 1
-                }.toBooleanArray()
 
-                if (indicatorsAfterFlips.contentEquals(machine.targetIndicators)) {
-                    val indcatorString = machine.targetIndicators.joinToString("") { if (it) "#" else "." }
+                val joltagesMatch = machine.joltages.mapIndexed { joltageIndex, expectedJoltage ->
+                    expectedJoltage == memoizedCountOccurrences(allSwitchFlipsInCombo, joltageIndex)
+                }.all { it }
+
+                if (joltagesMatch) {
                     println(
-                        "For indicators $indcatorString flip the switches ${switchFlipCombo.joinToString("-")}"
+                        "For joltages ${
+                            machine.joltages.joinToString("-")
+                        } flip the switches ${
+                            switchFlipCombo.joinToString("-")
+                        }"
                     )
                     return@map switchFlipCombo
                 }
             }
+            println("No winning combo found for machine ${machine.joltages} - increase number of variants")
             intArrayOf()
         }
 
@@ -116,6 +124,11 @@ data class Day10B(
     }
 
 }
+
+fun countOccurrences(list: List<Int>, item: Int): Int =
+    list.count { o -> o == item }
+
+val memoizedCountOccurrences = ::countOccurrences.memoize()
 
 private fun parseMachines(input: String): List<Machine> {
     val indicatorsRegex = Regex("""\[(.*)]""")
@@ -142,13 +155,19 @@ private fun parseMachines(input: String): List<Machine> {
             }.toList()
             .toTypedArray()
 
-        Machine(indicators, switches)
+        val joltages = joltagesRegex.find(line)!!.value
+            .trim('{', '}')
+            .split(",")
+            .map { it.toInt() }
+            .toIntArray()
+
+        Machine(indicators, switches, joltages)
     }
     return machines
 }
 
 
-data class Machine(val targetIndicators: BooleanArray, val switches: Array<Switch>) {
+data class Machine(val targetIndicators: BooleanArray, val switches: Array<Switch>, val joltages: IntArray) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -158,6 +177,7 @@ data class Machine(val targetIndicators: BooleanArray, val switches: Array<Switc
 
         return targetIndicators.contentEquals(other.targetIndicators)
     }
+
     override fun hashCode(): Int {
         return targetIndicators.contentHashCode()
     }
